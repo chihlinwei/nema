@@ -81,3 +81,77 @@ ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2, fill=Habitat, colour=Habita
   theme_bw() %+replace% large
 ```
 
+# Correlation among environmental factors
+```{r}
+# Normalized enivronmental data to mean zero and unit variance
+es <- as.data.frame(scale(e[, c(-1:-9, -11:-13)]))
+# Calculate absolute correlation coefficient
+co <- as.dist(matrix(1, nrow=22, ncol=22)-abs(cor(es, use="pairwise.complete.obs")))
+hc <- hclust(co, method="average")
+
+# Convert dendrogram to ggplot style
+dhc <- as.dendrogram(hc)
+ghc    <- dendro_data(dhc, type="rectangle") 
+
+ggdendrogram(hc, rotate = FALSE)+
+  geom_hline(yintercept=0.1, linetype=2, colour="red")
+```
+
+"Salinity", "CN", "transmissometer", "Silt", "over20", "Sand", "Speed", "TOC", "Clay", "Temperature" will be retained for initial RDA analysis
+
+# Distance based redundency analysis
+## Full model
+```{r, fig.width=8, fig.height=5}
+db <- dbrda(b^0.25~Salinity+CN+transmissometer+Silt+over20+Sand+Speed+TOC+Clay+Temperature, distance = "bray", data=es)
+fit <- as.data.frame(db$CCA$biplot)
+sc <- min(abs(c(range(db$CCA$u[,1]), range(db$CCA$u[,1]))))
+fit <- fit*sc
+fit <- cbind(fit, label=c("Salin", "CN", "Trans", "Sil", "Over20", "San", "Spd", "TOC", "Temp"))
+
+ggplot(data=cbind(as.data.frame(db$CCA$u), e), aes(x=dbRDA1, y=dbRDA2))+
+  geom_point(size=8, pch=21, colour=gray(0, 0.2), alpha=0.8, aes(fill=Habitat))+
+  #stat_ellipse(type="norm", aes(colour=Habitat))+
+  geom_segment(data=fit, aes(x=0, y=0, xend=dbRDA1, yend=dbRDA2),
+               arrow = arrow(length = unit(0.2,"cm")), colour="royalblue2")+
+  geom_text(data=fit, aes(x=dbRDA1*1.2, y=dbRDA2*1.2, label=label), colour="royalblue2", size=5, fontface = "bold")+
+  scale_color_viridis(discrete = TRUE)+
+  scale_fill_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large
+
+su <- summary(db)
+cat("Constrained proportion = ", round(su$constr.chi/su$tot.chi*100, 1), "%", "\n",
+    "Unconstrained proportion = ", round(su$unconst.chi/su$tot.chi*100, 1), "%", "\n",
+    "dbRDA1 explains", round(su$cont$importance[2, 1]*100,1), "% of fit", 
+    "and", round(su$cont$importance[2, 1]*100*su$constr.chi/su$tot.chi, 1), "% of total", "\n",
+    "dbRDA2 explains", round(su$cont$importance[2, 2]*100,1), "% of fit", 
+    "and", round(su$cont$importance[2, 2]*100*su$constr.chi/su$tot.chi, 1), "% of total")
+```
+
+## Model selection based on adjust R2
+```{r, fig.width=8, fig.height=5}
+ordistep(db, permutations=999)
+db <- dbrda(b^0.25~Speed+CN+Salinity+over20+TOC+transmissometer+Temperature, distance = "bray", data=es)
+fit <- as.data.frame(db$CCA$biplot)
+sc <- min(abs(c(range(db$CCA$u[,1]), range(db$CCA$u[,1]))))
+fit <- fit*sc
+fit <- cbind(fit, label=c("Spd", "CN", "Salin", "Over20", "TOC", "Trans", "Temp"))
+
+ggplot(data=cbind(as.data.frame(db$CCA$u), e), aes(x=dbRDA1, y=dbRDA2))+
+  geom_point(size=8, pch=21, colour=gray(0, 0.2), alpha=0.8, aes(fill=Habitat))+
+  #stat_ellipse(type="norm", aes(colour=Habitat))+
+  geom_segment(data=fit, aes(x=0, y=0, xend=dbRDA1, yend=dbRDA2),
+               arrow = arrow(length = unit(0.2,"cm")), colour="royalblue2")+
+  geom_text(data=fit, aes(x=dbRDA1*1.2, y=dbRDA2*1.2, label=label), colour="royalblue2", size=5, fontface = "bold")+
+  scale_color_viridis(discrete = TRUE)+
+  scale_fill_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large
+
+su <- summary(db)
+cat("Constrained proportion = ", round(su$constr.chi/su$tot.chi*100, 1), "%", "\n",
+    "Unconstrained proportion = ", round(su$unconst.chi/su$tot.chi*100, 1), "%", "\n",
+    "dbRDA1 explains", round(su$cont$importance[2, 1]*100,1), "% of fit", 
+    "and", round(su$cont$importance[2, 1]*100*su$constr.chi/su$tot.chi, 1), "% of total", "\n",
+    "dbRDA2 explains", round(su$cont$importance[2, 2]*100,1), "% of fit", 
+    "and", round(su$cont$importance[2, 2]*100*su$constr.chi/su$tot.chi, 1), "% of total")
+```
+
