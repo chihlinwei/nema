@@ -39,9 +39,12 @@ no_strip <- theme(strip.background = element_rect(colour=NA, fill=NA),
 ```
 
 # Preparing nematode and environmental data
+Relative abundance of nematode species from 100 randomly slected individuals was scaled to the total nematode abundance in each sample.
 ```{r}
 # Convert to species-by-sample matrix
 b <- acast(nema_abund, Cruise+Station+Deployment+Tube+Subcore~Genus+Species, fill=0)
+# Multiply the relative abundance by total abundance
+b <- decostand(b, "total")*nema_total$Abundance
 
 # Match environmental data to neamtode sample
 e <- ldply(strsplit(row.names(b), split="_"))
@@ -114,8 +117,8 @@ ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2, fill=Habitat, colour=Habita
   geom_point(pch=21, alpha=0.8, size=5, colour=gray(0, 0.2))+
   stat_ellipse(type="norm")+
   annotate("text", x=-0.45, y=-0.4, label=stress, size=5)+
-  geom_label_repel(data=lab, aes(x=MDS1, y=MDS2, label=label), 
-             colour="white", size=4, label.padding = unit(0.2, "lines"))+
+  geom_label_repel(data=lab, aes(x=MDS1, y=MDS2, label=label), colour="black", 
+             fill="white", size=4, label.padding = unit(0.2, "lines"))+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
@@ -188,7 +191,7 @@ ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2))+
   geom_point(aes(shape=Habitat), alpha=0.8, size=5, colour=gray(0, 0.2))+
   stat_ellipse(aes(linetype=Habitat), type="norm")+
   annotate("text", x=-0.45, y=-0.4, label=stress, size=5)+
-  geom_label_repel(data=lab, aes(label=label, fill=Trait), colour="white",
+  geom_label_repel(data=lab, aes(label=label, colour=Trait), fill="white", fontface = "bold",
                    size=5, label.padding = unit(0.2, "lines"))+
   scale_shape_manual(values=c(19, 1))+
   scale_fill_viridis(discrete = TRUE)+
