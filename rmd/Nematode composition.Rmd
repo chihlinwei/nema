@@ -61,7 +61,7 @@ s <- nema_species[match(colnames(b), with(nema_species, paste(Genus, Species, se
 ```
 
 # Cluster Analysis
-```{r, fig.width=8, fig.height=3}
+```{r, fig.width=8, fig.height=4}
 # Hierarchical Clustering based on square root transformed abundance data 
 # Agglomeration used group average (= UPGMA) method
 d <- vegdist(b^0.25)
@@ -82,7 +82,7 @@ ggdendrogram(hc, rotate = FALSE)+
 ```
 
 # Nonmetric Multidimensional Scaling
-```{r, fig.width=8, fig.height=3}
+```{r, fig.width=8, fig.height=4}
 md <- metaMDS(vegdist(b^0.25))
 stress <- paste("Stress = ", deparse(round(md$stress,2)))
 
@@ -98,7 +98,7 @@ ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2, fill=Habitat, colour=Habita
 
 # Weighted Averages Scores for Species
 ## Most abundant species in the canyon and on the slope
-```{r, fig.width=8, fig.height=3}
+```{r, fig.width=8, fig.height=4}
 # Top 5 most abundant species
 can <- sort(colSums(b[e$Habitat=="Canyon", ]), decreasing = TRUE)[1:5]
 slo <- sort(colSums(b[e$Habitat=="Slope", ]), decreasing = TRUE)[1:5]
@@ -122,19 +122,19 @@ ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2, fill=Habitat, colour=Habita
 ```
 
 ## Buccal morphology
-```{r, fig.width=8, fig.height=3}
+```{r, fig.width=8, fig.height=4}
 tr <- aggregate(t(b), by=list(s$Buccal), FUN=sum)
 buc <- data.frame(t(tr[,-1]))
 names(buc) <- tr$Group.1
-lab <- data.frame(wascores(md$points, decostand(buc, "total")))
-lab$label <- row.names(lab)
-lab$descrip <- c("selective deposit feeder", "non-selective deposit feeder", "epigrowth feeder", "predator", "mouthless")
+lab1 <- data.frame(wascores(md$points, decostand(buc, "total")))
+lab1$label <- row.names(lab1)
+lab1$descrip <- c("selective deposit feeder", "non-selective deposit feeder", "epigrowth feeder", "predator", "mouthless")
 
 ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2, fill=Habitat, colour=Habitat))+
   geom_point(pch=21, alpha=0.8, size=5, colour=gray(0, 0.2))+
   stat_ellipse(type="norm")+
   annotate("text", x=-0.45, y=-0.4, label=stress, size=5)+
-  geom_label_repel(data=lab, aes(label=label), fill=viridis(3)[2],
+  geom_label_repel(data=lab1, aes(label=label), fill=viridis(3)[2],
              colour="white", size=10, label.padding = unit(0.2, "lines"))+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
@@ -142,45 +142,62 @@ ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2, fill=Habitat, colour=Habita
 ```
 
 ## Tail shape
-```{r, fig.width=8, fig.height=3}
+```{r, fig.width=8, fig.height=4}
 tr <- aggregate(t(b), by=list(s$Tail), FUN=sum)
 tai <- data.frame(t(tr[,-1]))
 names(tai) <- tr$Group.1
-lab <- data.frame(wascores(md$points, decostand(tai, "total")))
-lab$label <- row.names(lab)
-lab$descrip <- c("clavate", "conical", "elongated/filiform", "short/round")
+lab2 <- data.frame(wascores(md$points, decostand(tai, "total")))
+lab2$label <- row.names(lab2)
+lab2$descrip <- c("clavate", "conical", "elongated/filiform", "short/round")
 
 ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2, fill=Habitat, colour=Habitat))+
   geom_point(pch=21, alpha=0.8, size=5, colour=gray(0, 0.2))+
   stat_ellipse(type="norm")+
   annotate("text", x=-0.45, y=-0.4, label=stress, size=5)+
-  geom_label_repel(data=lab, aes(label=label), fill=viridis(3)[2],
+  geom_label_repel(data=lab2, aes(label=label), fill=viridis(3)[2],
              colour="white", size=10, label.padding = unit(0.2, "lines"))+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
 ```
 ## Life history strategy
-```{r, fig.width=8, fig.height=3}
+```{r, fig.width=8, fig.height=4}
 tr <- aggregate(t(b), by=list(s$Life.history), FUN=sum)
 lif <- data.frame(t(tr[,-1]))
 names(lif) <- tr$Group.1
-lab <- data.frame(wascores(md$points, decostand(lif, "total")))
-lab$label <- row.names(lab)
+lab3 <- data.frame(wascores(md$points, decostand(lif, "total")))
+lab3$label <- row.names(lab3)
+lab3$descrip <- c("extreme coloniser", "coloniser", "intermediate", "persister")
 
 ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2, fill=Habitat, colour=Habitat))+
   geom_point(pch=21, alpha=0.8, size=5, colour=gray(0, 0.2))+
   stat_ellipse(type="norm")+
   annotate("text", x=-0.45, y=-0.4, label=stress, size=5)+
-  geom_label_repel(data=lab, aes(label=label), fill=viridis(3)[2],
+  geom_label_repel(data=lab3, aes(label=label), fill=viridis(3)[2],
              colour="white", size=10, label.padding = unit(0.2, "lines"))+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
 ```
 
+## Combine all traits
+```{r, fig.width=8, fig.height=4}
+lab <- rbind(cbind(lab1, Trait="Buccal morphology"), cbind(lab2, Trait="Tail shape"), cbind(lab3, Trait="Life history strategy"))
+
+ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2))+
+  geom_point(aes(shape=Habitat), alpha=0.8, size=5, colour=gray(0, 0.2))+
+  stat_ellipse(aes(linetype=Habitat), type="norm")+
+  annotate("text", x=-0.45, y=-0.4, label=stress, size=5)+
+  geom_label_repel(data=lab, aes(label=label, fill=Trait), colour="white",
+                   size=5, label.padding = unit(0.2, "lines"))+
+  scale_shape_manual(values=c(19, 1))+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large
+```
+
 # Correlation among environmental factors
-```{r}
+```{r, fig.width=8, fig.height=4}
 # Normalized enivronmental data to mean zero and unit variance
 es <- as.data.frame(scale(e[, c(-1:-9, -11:-13, -35)]))
 # Calculate absolute correlation coefficient
@@ -199,7 +216,7 @@ ggdendrogram(hc, rotate = FALSE)+
 
 # Distance based redundency analysis
 ## Full model
-```{r, fig.width=8, fig.height=3}
+```{r, fig.width=8, fig.height=4}
 db <- dbrda(b^0.25~Salinity+CN+transmissometer+Silt+over20+Sand+Speed+TOC+Clay+Temperature, distance = "bray", data=es)
 fit <- as.data.frame(db$CCA$biplot)
 sc <- min(abs(c(range(db$CCA$u[,1]), range(db$CCA$u[,1]))))
@@ -226,7 +243,7 @@ cat("Constrained proportion = ", round(su$constr.chi/su$tot.chi*100, 1), "%", "\
 ```
 
 ## Model selection based on adjust R2
-```{r, fig.width=8, fig.height=3}
+```{r, fig.width=8, fig.height=4}
 ordistep(db, permutations=999)
 db <- dbrda(b^0.25~Speed+CN+Salinity+over20+TOC+transmissometer+Temperature, distance = "bray", data=es)
 fit <- as.data.frame(db$CCA$biplot)
@@ -254,7 +271,7 @@ cat("Constrained proportion = ", round(su$constr.chi/su$tot.chi*100, 1), "%", "\
 ```
 
 # Correlation between environmental variables and nMDS ordination 
-```{r, fig.width=8, fig.height=3}
+```{r, fig.width=8, fig.height=4}
 fit <- envfit(md$points, es[, c("Speed", "CN", "Salinity", "over20", "TOC", "transmissometer", "Temperature")])
 lab <- data.frame(fit$vectors$arrows*0.4)
 lab$label <- row.names(lab)
@@ -272,7 +289,7 @@ ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2))+
 ```
 
 # Beta diversity along canyon and slope transect
-```{r, fig.width=8, fig.height=3}
+```{r, fig.width=8, fig.height=4}
 bl <- splitBy(~Cruise+Habitat, cbind(b, e[,c("Cruise", "Habitat")]))
 bl <- lapply(bl, FUN=function(x)decostand(x[, -164:-165], "pa"))
 bd <- lapply(bl, FUN=function(x)ldply(beta.multi(x, "sorensen"), .id="Beta"))
@@ -305,7 +322,7 @@ kable(bd[, -4])
 ```
 
 # Beta diversity between canyon and slope site 
-```{r, fig.width=8, fig.height=3}
+```{r, fig.width=8, fig.height=4}
 bl <- splitBy(~Cruise+Zone, cbind(b, e[,c("Cruise", "Zone")]))
 bl <- lapply(bl, FUN=function(x)decostand(x[, -164:-165], "pa"))
 bd <- lapply(bl, FUN=function(x)ldply(beta.multi(x, "sorensen"), .id="Beta"))
