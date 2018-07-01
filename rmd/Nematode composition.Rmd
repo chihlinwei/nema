@@ -24,7 +24,7 @@ library(doBy)
 library(knitr)
 ```
 
-# ggplot them setting
+# ggplot theme setting
 ```{r}
 large <- theme(legend.title = element_text(size=15),
         legend.text = element_text(size=15),
@@ -60,7 +60,7 @@ e$Zone <- cut(e$Depth, breaks=depth.bk, labels=depth.lab)
 s <- nema_species[match(colnames(b), with(nema_species, paste(Genus, Species, sep="_"))),]
 ```
 
-# Cluster Analysis and 
+# Cluster Analysis
 ```{r, fig.width=8, fig.height=3}
 # Hierarchical Clustering based on square root transformed abundance data 
 # Agglomeration used group average (= UPGMA) method
