@@ -102,13 +102,45 @@ ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2, fill=Habitat, colour=Habita
 # Weighted Averages Scores for Species
 ## Most abundant species in the canyon and on the slope
 ```{r, fig.width=8, fig.height=4}
-# Top 5 most abundant species
-can <- sort(colSums(b[e$Habitat=="Canyon", ]), decreasing = TRUE)[1:5]
-slo <- sort(colSums(b[e$Habitat=="Slope", ]), decreasing = TRUE)[1:5]
+# Species in canyon with more than 10 individuals
+can <- sort(colSums(b[e$Habitat=="Canyon", ]), decreasing = TRUE)
+can[can>10]
+# Species on slope with more than 10 individuals
+slo <- sort(colSums(b[e$Habitat=="Slope", ]), decreasing = TRUE)
+slo[slo>10]
 
-can <- data.frame(wascores(md$points, b[, names(can)]))
+# Top 5 most abundant species
+can <- data.frame(wascores(md$points, b[, names(can)[1:5]]), Abundance=can[1:5])
 can$label <- gsub("_", " ", row.names(can))
-slo <- data.frame(wascores(md$points, b[, names(slo)]))
+slo <- data.frame(wascores(md$points, b[, names(slo)[1:5]]), Abundance=slo[1:5])
+slo$label <- gsub("_", " ", row.names(slo))
+
+lab <- rbind(cbind(can, Habitat="Canyon"), cbind(slo, Habitat="Slope"))
+
+ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2, fill=Habitat, colour=Habitat))+
+  geom_point(pch=21, alpha=0.8, size=5, colour=gray(0, 0.2))+
+  stat_ellipse(type="norm")+
+  annotate("text", x=-0.45, y=-0.4, label=stress, size=5)+
+  geom_label_repel(data=lab, aes(x=MDS1, y=MDS2, label=label), colour="black", 
+             fill="white", size=4, label.padding = unit(0.2, "lines"))+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large
+```
+
+## Most frequently occurred species in the canyon and on the slope
+```{r, fig.width=8, fig.height=4}
+# Species in canyon with more than 10 occurrence
+can <- sort(colSums(decostand(b, "pa")[e$Habitat=="Canyon", ]), decreasing = TRUE)
+can[can>10]
+# Species on slope with more than 10 occurrence
+slo <- sort(colSums(decostand(b, "pa")[e$Habitat=="Slope", ]), decreasing = TRUE)
+slo[slo>10]
+
+# Top 5 most frequently occurred species
+can <- data.frame(wascores(md$points, b[, names(can)[1:5]]), Occurrence=can[1:5])
+can$label <- gsub("_", " ", row.names(can))
+slo <- data.frame(wascores(md$points, b[, names(slo)[1:5]]), Occurrence=slo[1:5])
 slo$label <- gsub("_", " ", row.names(slo))
 
 lab <- rbind(cbind(can, Habitat="Canyon"), cbind(slo, Habitat="Slope"))
