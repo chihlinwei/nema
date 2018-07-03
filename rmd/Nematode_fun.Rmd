@@ -63,16 +63,23 @@ e$Zone <- cut(e$Depth, breaks=depth.bk, labels=depth.lab)
 s <- nema_species[match(colnames(b), with(nema_species, paste(Genus, Species, sep="_"))),]
 ```
 
-# Estimate Function Hill Numbers
-```{r}
+# Estimate Functional Hill Numbers
+* Bootstrap confidence interval (1000 iteration)
+```{r, eval=FALSE}
 tr <- s[, c("Buccal", "Tail", "Life.history")]
 row.names(tr) <- colnames(b)
 dis <- gowdis(tr)
 ab <- as.list(as.data.frame(t(b)))
 Q <- raoQ(ab, dis, datatype = "abundance")
-fd <- FunD(ab, dis, tau=Q, q=0:2, boot=100, datatype = "abundance")
+fd <- FunD(ab, dis, tau=Q, q=0:2, boot=1000, datatype = "abundance")
+save(fd, file="../rda/FunHillNumbers.rda")
+```
+
+```{r}
+load("../rda/FunHillNumbers.rda")
 fd <- subset(fd$forq, tau=="dmean")
 ```
+
 
 ## q = 0, tau = RaoQ of functional richness
 ```{r, fig.width=6, fig.height=4}
@@ -141,7 +148,7 @@ summary(f)
 ```{r, fig.width=4.5, fig.height=4}
 p1 <- ggplot(data=cbind(subset(fd, q==1), e), 
        aes(x=Speed, y=estimate, ymin=LCL, ymax=UCL))+
-  geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Modeled Current Velocity (m/s)", y="Number of Virtural Functional Group")+
   scale_fill_viridis(discrete = TRUE)+
@@ -154,7 +161,7 @@ cor.test(formula=~estimate+Speed, data=cbind(subset(fd, q==1), e))
 ```{r, fig.width=4.5, fig.height=4}
 p2 <- ggplot(data=cbind(subset(fd, q==1), e), 
        aes(x=over20, y=estimate, ymin=LCL, ymax=UCL))+
-  geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Modeled Duration of Erosion (hr)", y="Number of Virtural Functional Group")+
   scale_fill_viridis(discrete = TRUE)+
@@ -167,7 +174,7 @@ cor.test(formula=~estimate+over20, data=cbind(subset(fd, q==1), e))
 ```{r, fig.width=4.5, fig.height=4}
 p3 <- ggplot(data=cbind(subset(fd, q==1), e), 
        aes(x=transmissometer, y=estimate, ymin=LCL, ymax=UCL))+
-  geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Light Transmission (%)", y="Number of Virtural Functional Group")+
   scale_fill_viridis(discrete = TRUE)+
@@ -181,7 +188,7 @@ cor.test(formula=~estimate+transmissometer, data=cbind(subset(fd, q==1), e))
 ```{r, fig.width=4.5, fig.height=4}
 p4 <- ggplot(data=cbind(subset(fd, q==1), e), 
        aes(x=TOC, y=estimate, ymin=LCL, ymax=UCL))+
-  geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Total Organic Carbon (%)", y="Number of Virtural Functional Group")+
   scale_fill_viridis(discrete = TRUE)+
