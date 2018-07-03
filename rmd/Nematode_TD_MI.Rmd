@@ -69,7 +69,7 @@ s <- nema_species[match(colnames(b), with(nema_species, paste(Genus, Species, se
 tr <- aggregate(t(b), by=list(s$Buccal), FUN=sum)
 buc <- data.frame(t(tr[,-1]))
 names(buc) <- tr$Group.1
-td <- rowSums(decostand(buc, "total")^2)
+td <- 1/rowSums(decostand(buc, "total")^2)
 ```
 
 ```{r, fig.width=6, fig.height=4}
@@ -161,7 +161,7 @@ ggplot(data=cbind(mi, e),
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size =5)+
   stat_smooth(data=subset(cbind(mi, e), Habitat=="Slope"), 
               method="lm", fill="gray60", colour=viridis(2)[2])+
-  labs(x="Depth (m)", y="Index of Trophic Diversity")+
+  labs(x="Depth (m)", y="Maturity Index")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
