@@ -21,6 +21,7 @@ library(viridis)
 library(doBy)
 library(cowplot)
 library(knitr)
+library(nlme)
 ```
 
 # ggplot theme setting
@@ -85,8 +86,13 @@ ggplot(data=cbind(subset(fd, q==0), e),
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
 
+# Linear regression
 hl <- splitBy(~Habitat, cbind(subset(fd, q==0), e))
 lapply(hl, FUN=function(x)summary(lm(estimate~Depth, data=x)))
+
+# Linear Mixed-Effects Models
+f <- lme(fixed = estimate ~ Habitat*Depth, random = ~1|Cruise, data=cbind(subset(fd, q==0), e), method = "REML", weights=varIdent(form=~1|Cruise))
+summary(f)
 ```
 
 ## q = 1, tau = RaoQ of effective number of typical functional group
@@ -101,8 +107,13 @@ ggplot(data=cbind(subset(fd, q==1), e),
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
 
+# Linear regression
 hl <- splitBy(~Habitat, cbind(subset(fd, q==1), e))
 lapply(hl, FUN=function(x)summary(lm(estimate~Depth, data=x)))
+
+# Linear Mixed-Effects Models
+f <- lme(fixed = estimate ~ Habitat*Depth, random = ~1|Cruise, data=cbind(subset(fd, q==1), e), method = "REML", weights=varIdent(form=~1|Cruise))
+summary(f)
 ```
 
 ## q = 2, tau = RaoQ of effective number of dominant functional group
@@ -117,8 +128,13 @@ ggplot(data=cbind(subset(fd, q==2), e),
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
 
+# Linear regression
 hl <- splitBy(~Habitat, cbind(subset(fd, q==2), e))
 lapply(hl, FUN=function(x)summary(lm(estimate~Depth, data=x)))
+
+# Linear Mixed-Effects Models
+f <- lme(fixed = estimate ~ Habitat*Depth, random = ~1|Cruise, data=cbind(subset(fd, q==2), e), method = "REML", weights=varIdent(form=~1|Cruise))
+summary(f)
 ```
 
 # Correlation bettwen functional diversity (q=1, tau=RaoQ) and environmental factor

@@ -21,6 +21,7 @@ library(viridis)
 library(doBy)
 library(cowplot)
 library(knitr)
+library(nlme)
 ```
 
 # ggplot theme setting
@@ -87,8 +88,13 @@ ggplot(data=cbind(h0, e),
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
 
+# Linear regression
 hl <- splitBy(~Habitat, subset(cbind(h0, e), Sample!="OR1_1126_GC2_1_9_3"))
 lapply(hl, FUN=function(x)summary(lm(qD~Depth, data=x)))
+
+# Linear Mixed-Effects Models
+f <- lme(fixed = qD ~ Habitat*Depth, random = ~1|Cruise, data=cbind(h0, e), method = "REML", weights=varIdent(form=~1|Cruise))
+summary(f)
 ```
 
 ## q=1 or exponential Shannon diversity
@@ -103,8 +109,13 @@ ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"),
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
 
+# Linear regression
 hl <- splitBy(~Habitat, subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"))
 lapply(hl, FUN=function(x)summary(lm(qD~Depth, data=x)))
+
+# Linear Mixed-Effects Models
+f <- lme(fixed = qD ~ Habitat*Depth, random = ~1|Cruise, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"), method = "REML", weights=varIdent(form=~1|Cruise))
+summary(f)
 ```
 
 ## q=2 or inverse Simpson diversity
@@ -119,8 +130,13 @@ ggplot(data=subset(cbind(h2, e), Sample!="OR1_1126_GC2_1_9_2" & Sample!="OR1_112
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
 
+# Linear regression
 hl <- splitBy(~Habitat, subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2" & Sample!="OR1_1126_GC2_1_9_3"))
 lapply(hl, FUN=function(x)summary(lm(qD~Depth, data=x)))
+
+# Linear Mixed-Effects Models
+f <- lme(fixed = qD ~ Habitat*Depth, random = ~1|Cruise, data=subset(cbind(h2, e), Sample!="OR1_1126_GC2_1_9_2" & Sample!="OR1_1126_GC2_1_9_3"), method = "REML", weights=varIdent(form=~1|Cruise))
+summary(f)
 ```
 
 # Correlation bettwen exponential Shannon (q=1) and environmental factor
