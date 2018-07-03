@@ -1,16 +1,7 @@
----
-title: "Nematode Functional Diversity"
-author: "Wei, C.-L., Liao, J.-X."
-date: "`r Sys.Date()`"
-output: html_document
----
-
-```{r setup, include=FALSE}
+## ----setup, include=FALSE------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE)
-```
 
-# Reguired package
-```{r}
+## ------------------------------------------------------------------------
 library(nema)
 library(FD)
 library(ggplot2)
@@ -22,10 +13,8 @@ library(doBy)
 library(cowplot)
 library(knitr)
 library(nlme)
-```
 
-# ggplot theme setting
-```{r}
+## ------------------------------------------------------------------------
 large <- theme(legend.title = element_text(size=15),
         legend.text = element_text(size=15),
         axis.title = element_text(size=15),
@@ -36,11 +25,8 @@ rotate <- theme(axis.text.x = element_text(angle = 30, hjust=0.5))
 
 no_strip <- theme(strip.background = element_rect(colour=NA, fill=NA),
                   strip.text = element_text(colour=NA))
-```
 
-# Preparing nematode and environmental data
-Relative abundance of nematode species from 100 randomly slected individuals was scaled to the total nematode abundance in each sample.
-```{r}
+## ------------------------------------------------------------------------
 # Convert to species-by-sample matrix
 b <- acast(nema_abund, Cruise+Station+Deployment+Tube+Subcore~Genus+Species, fill=0)
 # Multiply the relative abundance by total abundance
@@ -61,10 +47,8 @@ e$Zone <- cut(e$Depth, breaks=depth.bk, labels=depth.lab)
 
 # Match the trait data to the species-by-sample matrix
 s <- nema_species[match(colnames(b), with(nema_species, paste(Genus, Species, sep="_"))),]
-```
 
-# Estimate Function Hill Numbers
-```{r}
+## ------------------------------------------------------------------------
 tr <- s[, c("Buccal", "Tail", "Life.history")]
 row.names(tr) <- colnames(b)
 dis <- gowdis(tr)
@@ -72,10 +56,8 @@ ab <- as.list(as.data.frame(t(b)))
 Q <- raoQ(ab, dis, datatype = "abundance")
 fd <- FunD(ab, dis, tau=Q, q=0:2, boot=100, datatype = "abundance")
 fd <- subset(fd$forq, tau=="dmean")
-```
 
-## q = 0, tau = RaoQ of functional richness
-```{r, fig.width=6, fig.height=4}
+## ---- fig.width=6, fig.height=4------------------------------------------
 ggplot(data=cbind(subset(fd, q==0), e), 
        aes(x=Depth, y=estimate, ymin=LCL, ymax=UCL, colour=Habitat))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
@@ -93,10 +75,8 @@ lapply(hl, FUN=function(x)summary(lm(estimate~Depth, data=x)))
 # Linear Mixed-Effects Models
 f <- lme(fixed = estimate ~ Habitat*Depth, random = ~1|Cruise, data=cbind(subset(fd, q==0), e), method = "REML", weights=varIdent(form=~1|Cruise))
 summary(f)
-```
 
-## q = 1, tau = RaoQ of effective number of typical functional group
-```{r, fig.width=6, fig.height=4}
+## ---- fig.width=6, fig.height=4------------------------------------------
 ggplot(data=cbind(subset(fd, q==1), e), 
        aes(x=Depth, y=estimate, ymin=LCL, ymax=UCL, colour=Habitat))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
@@ -114,10 +94,8 @@ lapply(hl, FUN=function(x)summary(lm(estimate~Depth, data=x)))
 # Linear Mixed-Effects Models
 f <- lme(fixed = estimate ~ Habitat*Depth, random = ~1|Cruise, data=cbind(subset(fd, q==1), e), method = "REML", weights=varIdent(form=~1|Cruise))
 summary(f)
-```
 
-## q = 2, tau = RaoQ of effective number of dominant functional group
-```{r, fig.width=6, fig.height=4}
+## ---- fig.width=6, fig.height=4------------------------------------------
 ggplot(data=cbind(subset(fd, q==2), e), 
        aes(x=Depth, y=estimate, ymin=LCL, ymax=UCL, colour=Habitat))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
@@ -135,10 +113,8 @@ lapply(hl, FUN=function(x)summary(lm(estimate~Depth, data=x)))
 # Linear Mixed-Effects Models
 f <- lme(fixed = estimate ~ Habitat*Depth, random = ~1|Cruise, data=cbind(subset(fd, q==2), e), method = "REML", weights=varIdent(form=~1|Cruise))
 summary(f)
-```
 
-# Correlation bettwen functional diversity (q=1, tau=RaoQ) and environmental factor
-```{r, fig.width=4.5, fig.height=4}
+## ---- fig.width=4.5, fig.height=4----------------------------------------
 p1 <- ggplot(data=cbind(subset(fd, q==1), e), 
        aes(x=Speed, y=estimate, ymin=LCL, ymax=UCL))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
@@ -149,9 +125,8 @@ p1 <- ggplot(data=cbind(subset(fd, q==1), e),
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
 cor.test(formula=~estimate+Speed, data=cbind(subset(fd, q==1), e))
-```
 
-```{r, fig.width=4.5, fig.height=4}
+## ---- fig.width=4.5, fig.height=4----------------------------------------
 p2 <- ggplot(data=cbind(subset(fd, q==1), e), 
        aes(x=over20, y=estimate, ymin=LCL, ymax=UCL))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
@@ -162,9 +137,8 @@ p2 <- ggplot(data=cbind(subset(fd, q==1), e),
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
 cor.test(formula=~estimate+over20, data=cbind(subset(fd, q==1), e))
-```
 
-```{r, fig.width=4.5, fig.height=4}
+## ---- fig.width=4.5, fig.height=4----------------------------------------
 p3 <- ggplot(data=cbind(subset(fd, q==1), e), 
        aes(x=transmissometer, y=estimate, ymin=LCL, ymax=UCL))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
@@ -175,10 +149,8 @@ p3 <- ggplot(data=cbind(subset(fd, q==1), e),
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
 cor.test(formula=~estimate+transmissometer, data=cbind(subset(fd, q==1), e))
-```
 
-
-```{r, fig.width=4.5, fig.height=4}
+## ---- fig.width=4.5, fig.height=4----------------------------------------
 p4 <- ggplot(data=cbind(subset(fd, q==1), e), 
        aes(x=TOC, y=estimate, ymin=LCL, ymax=UCL))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
@@ -189,14 +161,12 @@ p4 <- ggplot(data=cbind(subset(fd, q==1), e),
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
 cor.test(formula=~estimate+TOC, data=cbind(subset(fd, q==1), e))
-```
 
-```{r, fig.width=9, fig.height=8}
+## ---- fig.width=9, fig.height=8------------------------------------------
 plot_grid(p1, p2, p3, p4, ncol=2, align = "h", axis="b")
-```
 
-```{r}
+## ------------------------------------------------------------------------
 out <- cbind(nema_total, "0FD"=subset(fd, q==0)$estimate, "1FD" = subset(fd, q==1)$estimate, "2FD"=subset(fd, q==2)$estimate)
 row.names(out) <- NULL
 kable(out)
-```
+

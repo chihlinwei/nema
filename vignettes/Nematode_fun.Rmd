@@ -2,7 +2,11 @@
 title: "Nematode Functional Diversity"
 author: "Wei, C.-L., Liao, J.-X."
 date: "`r Sys.Date()`"
-output: html_document
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Nematode Functional Diversity}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
