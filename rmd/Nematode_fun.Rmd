@@ -20,6 +20,7 @@ library(plyr)
 library(viridis)
 library(doBy)
 library(cowplot)
+library(knitr)
 ```
 
 # ggplot theme setting
@@ -176,4 +177,10 @@ cor.test(formula=~estimate+TOC, data=cbind(subset(fd, q==1), e))
 
 ```{r, fig.width=9, fig.height=8}
 plot_grid(p1, p2, p3, p4, ncol=2, align = "h", axis="b")
+```
+
+```{r}
+out <- cbind(nema_total, "0FD"=subset(fd, q==0)$estimate, "1FD" = subset(fd, q==1)$estimate, "2FD"=subset(fd, q==2)$estimate)
+row.names(out) <- NULL
+kable(out)
 ```

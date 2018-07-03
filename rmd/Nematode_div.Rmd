@@ -20,6 +20,7 @@ library(plyr)
 library(viridis)
 library(doBy)
 library(cowplot)
+library(knitr)
 ```
 
 # ggplot theme setting
@@ -124,7 +125,7 @@ lapply(hl, FUN=function(x)summary(lm(qD~Depth, data=x)))
 
 # Correlation bettwen exponential Shannon (q=1) and environmental factor
 ```{r, fig.width=4.5, fig.height=4}
-p1 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"), 
+p1 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"), 
        aes(x=Speed, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
@@ -133,11 +134,11 @@ p1 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"),
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
-cor.test(formula=~qD+Speed, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"))
+cor.test(formula=~qD+Speed, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"))
 ```
 
 ```{r, fig.width=4.5, fig.height=4}
-p2 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"), 
+p2 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"), 
        aes(x=over20, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
@@ -146,11 +147,11 @@ p2 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"),
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
-cor.test(formula=~qD+over20, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"))
+cor.test(formula=~qD+over20, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"))
 ```
 
 ```{r, fig.width=4.5, fig.height=4}
-p3 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"), 
+p3 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"), 
        aes(x=transmissometer, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
@@ -159,11 +160,11 @@ p3 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"),
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
-cor.test(formula=~qD+transmissometer, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"))
+cor.test(formula=~qD+transmissometer, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"))
 ```
 
 ```{r, fig.width=4.5, fig.height=4}
-p4 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"), 
+p4 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"), 
        aes(x=TOC, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
@@ -172,10 +173,19 @@ p4 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"),
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
-cor.test(formula=~qD+TOC, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"))
+cor.test(formula=~qD+TOC, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"))
 ```
 
 ```{r, fig.width=9, fig.height=8}
 plot_grid(p1, p2, p3, p4, ncol=2, align = "h", axis="b")
+```
+
+```{r}
+out <- cbind(e[, 1:5], "Indiv"=rowSums(b), "0D"=h0$qD, "1D" = h1$qD, "2D"=h2$qD)
+row.names(out) <- NULL
+# Outliers, the confidence interval too large 
+out[out$Cruise=="OR1_1126" & out$Station=="GC2" & out$Subcore == 2, c("2D")] <- NA
+out[out$Cruise=="OR1_1126" & out$Station=="GC2" & out$Subcore == 3, c("1D", "2D")] <- NA
+kable(out)
 ```
 
