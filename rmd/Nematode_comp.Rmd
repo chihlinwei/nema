@@ -99,6 +99,20 @@ ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2, fill=Habitat, colour=Habita
   theme_bw() %+replace% large
 ```
 
+# Permutational Multivariate Analysis of Variance
+```{r}
+# Main effect
+adonis(b^0.25~Habitat*Zone, data=e, method="bray", strata=e$Cruise)
+
+# Habitat effect across all depth zone
+zl <- splitBy(~Zone, cbind(b, e))
+lapply(zl, FUN=function(x)adonis(x[,1:163]^0.25~Habitat, data=x, method="bray", strata=x$Cruise))
+
+# Depth effect across habitat
+hl <- splitBy(~Habitat, cbind(b, e))
+lapply(hl, FUN=function(x)adonis(x[,1:163]^0.25~Zone, data=x, method="bray", strata=x$Cruise))
+```
+
 # Weighted Averages Scores for Species
 ## Most abundant species in the canyon and on the slope
 ```{r, fig.width=8, fig.height=4}
