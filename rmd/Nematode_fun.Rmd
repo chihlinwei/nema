@@ -88,7 +88,7 @@ ggplot(data=cbind(subset(fd, q==0), e),
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
                   position=position_jitter(width=10))+
   stat_smooth(data=subset(cbind(subset(fd, q==0), e), Habitat=="Slope"), method="lm", fill="gray60", colour=viridis(2)[2])+
-  labs(x="Depth (m)", y="Number of Virtual Functional Group")+
+  labs(x="Depth (m)", y="Effective Number of Funtional Group")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
@@ -109,7 +109,7 @@ ggplot(data=cbind(subset(fd, q==1), e),
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
                   position=position_jitter(width=10))+
   #stat_smooth(method="lm", fill="gray60")+
-  labs(x="Depth (m)", y="Number of Virtual Functional Group")+
+  labs(x="Depth (m)", y="Effective Number of Funtional Group")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
@@ -123,6 +123,21 @@ f <- lme(fixed = estimate ~ Habitat*Depth, random = ~1|Cruise, data=cbind(subset
 summary(f)
 ```
 
+```{r, fig.width=6, fig.height=4}
+out <- summaryBy(estimate~Cruise+Station+Habitat+Zone, data=cbind(subset(fd, q==1), e), FUN=c(mean, sd))
+out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
+names(out)[5:6] <- c("estimate", "sd")
+
+ggplot(data=out, aes(x=Zone, y=estimate, ymin=estimate, ymax=estimate+sd, fill=Date))+
+  geom_errorbar(position="dodge")+
+  geom_bar(stat="identity", position="dodge", colour=gray(0, 0.2))+
+  facet_wrap(~Habitat)+
+  labs(x="Depth (m)", y="Effective Number of Funtional Group")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
+```
+
 ## q = 2, tau = RaoQ of effective number of dominant functional group
 ```{r, fig.width=6, fig.height=4}
 ggplot(data=cbind(subset(fd, q==2), e), 
@@ -130,7 +145,7 @@ ggplot(data=cbind(subset(fd, q==2), e),
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
                   position=position_jitter(width=10))+
   #stat_smooth(method="lm", fill="gray60")+
-  labs(x="Depth (m)", y="Number of Virtual Functional Group")+
+  labs(x="Depth (m)", y="Effective Number of Funtional Group")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large

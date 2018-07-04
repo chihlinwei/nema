@@ -92,7 +92,23 @@ f <- lme(fixed = td ~ Habitat*Depth, random = ~1|Cruise, data=cbind(td, e), meth
 summary(f)
 ```
 
-# Correlation bettwen functional diversity (q=1, tau=RaoQ) and environmental factor
+```{r, fig.width=6, fig.height=4}
+out <- summaryBy(td~Cruise+Station+Habitat+Zone, data=cbind(td, e), FUN=c(mean, sd))
+out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
+names(out)[5:6] <- c("td", "sd")
+
+ggplot(data=out, aes(x=Zone, y=td, ymin=td, ymax=td+sd, fill=Date))+
+  geom_errorbar(position="dodge")+
+  geom_bar(stat="identity", position="dodge", colour=gray(0, 0.2))+
+  facet_wrap(~Habitat)+
+  labs(x="Depth (m)", y="Index of Trophic Diversity")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
+```
+
+
+# Correlation bettwen trophic diversity and environmental factor
 ```{r, fig.width=4.5, fig.height=4}
 p1 <- ggplot(data=cbind(td, e), 
        aes(x=Speed, y=td))+
@@ -173,6 +189,21 @@ lapply(hl, FUN=function(x)summary(lm(mi~Depth, data=x)))
 # Linear Mixed-Effects Models
 f <- lme(fixed = mi ~ Habitat*Depth, random = ~1|Cruise, data=cbind(mi, e), method = "REML", weights=varIdent(form=~1|Cruise))
 summary(f)
+```
+
+```{r, fig.width=6, fig.height=4}
+out <- summaryBy(mi~Cruise+Station+Habitat+Zone, data=cbind(mi, e), FUN=c(mean, sd))
+out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
+names(out)[5:6] <- c("mi", "sd")
+
+ggplot(data=out, aes(x=Zone, y=mi, ymin=mi, ymax=mi+sd, fill=Date))+
+  geom_errorbar(position="dodge")+
+  geom_bar(stat="identity", position="dodge", colour=gray(0, 0.2))+
+  facet_wrap(~Habitat)+
+  labs(x="Depth (m)", y="Maturity Index")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
 ```
 
 # Correlation bettwen functional diversity (q=1, tau=RaoQ) and environmental factor

@@ -129,6 +129,21 @@ f <- lme(fixed = qD ~ Habitat*Depth, random = ~1|Cruise, data=subset(cbind(h1, e
 summary(f)
 ```
 
+```{r, fig.width=6, fig.height=4}
+out <- summaryBy(qD~Cruise+Station+Habitat+Zone, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"), FUN=c(mean, sd))
+out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
+names(out)[5:6] <- c("qD", "sd")
+
+ggplot(data=out, aes(x=Zone, y=qD, ymin=qD, ymax=qD+sd, fill=Date))+
+  geom_errorbar(position="dodge")+
+  geom_bar(stat="identity", position="dodge", colour=gray(0, 0.2))+
+  facet_wrap(~Habitat)+
+  labs(x="Depth (m)", y="Effective Number of Species")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
+```
+
 ## q=2 or inverse Simpson diversity
 ```{r, fig.width=6, fig.height=4}
 ggplot(data=subset(cbind(h2, e), Sample!="OR1_1126_GC2_1_9_2" & Sample!="OR1_1126_GC2_1_9_3"), 
