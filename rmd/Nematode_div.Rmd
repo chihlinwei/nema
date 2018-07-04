@@ -171,7 +171,7 @@ p1 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"),
        aes(x=Speed, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Current Velocity (m/s)", y="Effective Number of Species")+
+  labs(x="Modeled Current Velocity (m/s)", y="Effective Species")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -184,7 +184,7 @@ p2 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"),
        aes(x=over20, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Duration of Erosion (hr)", y="Effective Number of Species")+
+  labs(x="Modeled Duration of Erosion (hr)", y="Effective Species")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -197,7 +197,7 @@ p3 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"),
        aes(x=transmissometer, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Light Transmission (%)", y="Effective Number of Species")+
+  labs(x="Light Transmission (%)", y="Effective Species")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -210,7 +210,7 @@ p4 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"),
        aes(x=TOC, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Total Organic Carbon (%)", y="Effective Number of Species")+
+  labs(x="Total Organic Carbon (%)", y="Effective Species")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -218,8 +218,12 @@ p4 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"),
 cor.test(formula=~qD+TOC, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"))
 ```
 
-```{r, fig.width=9, fig.height=8}
-plot_grid(p1, p2, p3, p4, ncol=2, align = "h", axis="b")
+```{r, fig.width=10, fig.height=3}
+plot_grid(p1, p4, ncol=2, align = "h", axis="b")
+```
+
+```{r, fig.width=10, fig.height=3}
+plot_grid(p2, p3, ncol=2, align = "h", axis="b")
 ```
 
 ```{r}

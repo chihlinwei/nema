@@ -165,7 +165,7 @@ p1 <- ggplot(data=cbind(subset(fd, q==1), e),
        aes(x=Speed, y=estimate, ymin=LCL, ymax=UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Current Velocity (m/s)", y="Number of Virtural Functional Group")+
+  labs(x="Modeled Current Velocity (m/s)", y="Effective Functional Group")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -178,7 +178,7 @@ p2 <- ggplot(data=cbind(subset(fd, q==1), e),
        aes(x=over20, y=estimate, ymin=LCL, ymax=UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Duration of Erosion (hr)", y="Number of Virtural Functional Group")+
+  labs(x="Modeled Duration of Erosion (hr)", y="Effective Functional Group")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -191,7 +191,7 @@ p3 <- ggplot(data=cbind(subset(fd, q==1), e),
        aes(x=transmissometer, y=estimate, ymin=LCL, ymax=UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Light Transmission (%)", y="Number of Virtural Functional Group")+
+  labs(x="Light Transmission (%)", y="Effective Functional Group")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -205,7 +205,7 @@ p4 <- ggplot(data=cbind(subset(fd, q==1), e),
        aes(x=TOC, y=estimate, ymin=LCL, ymax=UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Total Organic Carbon (%)", y="Number of Virtural Functional Group")+
+  labs(x="Total Organic Carbon (%)", y="Effective Functional Group")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -213,8 +213,13 @@ p4 <- ggplot(data=cbind(subset(fd, q==1), e),
 cor.test(formula=~estimate+TOC, data=cbind(subset(fd, q==1), e))
 ```
 
-```{r, fig.width=9, fig.height=8}
-plot_grid(p1, p2, p3, p4, ncol=2, align = "h", axis="b")
+
+```{r, fig.width=10, fig.height=3}
+plot_grid(p1, p4, ncol=2, align = "h", axis="b")
+```
+
+```{r, fig.width=10, fig.height=3}
+plot_grid(p2, p3, ncol=2, align = "h", axis="b")
 ```
 
 ```{r}

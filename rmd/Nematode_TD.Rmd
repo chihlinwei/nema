@@ -171,13 +171,13 @@ ggplot(data=out, aes(x=Zone, y=qD, ymin=qD, ymax=qD+sd, fill=Date))+
   theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
 ```
 
-# Correlation bettwen exponential Shannon (q=1) and environmental factor
+# Correlation bettwen exponential Shannon (q=2) and environmental factor
 ```{r, fig.width=4.5, fig.height=4}
-p1 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"), 
+p1 <- ggplot(data=subset(cbind(h2, e), Sample!="OR1_1126_GC2_1_9_2"), 
        aes(x=Speed, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Current Velocity (m/s)", y="Effective Number of Species")+
+  labs(x="Modeled Current Velocity (m/s)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -186,11 +186,11 @@ cor.test(formula=~qD+Speed, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_
 ```
 
 ```{r, fig.width=4.5, fig.height=4}
-p2 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"), 
+p2 <- ggplot(data=subset(cbind(h2, e), Sample!="OR1_1126_GC2_1_9_2"), 
        aes(x=over20, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Duration of Erosion (hr)", y="Effective Number of Species")+
+  labs(x="Modeled Duration of Erosion (hr)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -199,11 +199,11 @@ cor.test(formula=~qD+over20, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9
 ```
 
 ```{r, fig.width=4.5, fig.height=4}
-p3 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"), 
+p3 <- ggplot(data=subset(cbind(h2, e), Sample!="OR1_1126_GC2_1_9_2"), 
        aes(x=transmissometer, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Light Transmission (%)", y="Effective Number of Species")+
+  labs(x="Light Transmission (%)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -212,11 +212,11 @@ cor.test(formula=~qD+transmissometer, data=subset(cbind(h1, e), Sample!="OR1_112
 ```
 
 ```{r, fig.width=4.5, fig.height=4}
-p4 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"), 
+p4 <- ggplot(data=subset(cbind(h2, e), Sample!="OR1_1126_GC2_1_9_2"), 
        aes(x=TOC, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Total Organic Carbon (%)", y="Effective Number of Species")+
+  labs(x="Total Organic Carbon (%)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -224,8 +224,12 @@ p4 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"),
 cor.test(formula=~qD+TOC, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"))
 ```
 
-```{r, fig.width=9, fig.height=8}
-plot_grid(p1, p2, p3, p4, ncol=2, align = "h", axis="b")
+```{r, fig.width=10, fig.height=3}
+plot_grid(p1, p4, ncol=2, align = "h", axis="b")
+```
+
+```{r, fig.width=10, fig.height=3}
+plot_grid(p2, p3, ncol=2, align = "h", axis="b")
 ```
 
 ```{r}

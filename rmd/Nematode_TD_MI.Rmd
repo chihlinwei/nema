@@ -114,7 +114,7 @@ p1 <- ggplot(data=cbind(td, e),
        aes(x=Speed, y=td))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Current Velocity (m/s)", y="Index of Trophic Diversity")+
+  labs(x="Modeled Current Velocity (m/s)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -127,7 +127,7 @@ p2 <- ggplot(data=cbind(td, e),
        aes(x=over20, y=td))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Duration of Erosion (hr)", y="Index of Trophic Diversity")+
+  labs(x="Modeled Duration of Erosion (hr)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -140,7 +140,7 @@ p3 <- ggplot(data=cbind(td, e),
        aes(x=transmissometer, y=td))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Light Transmission (%)", y="Index of Trophic Diversity")+
+  labs(x="Light Transmission (%)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -154,7 +154,7 @@ p4 <- ggplot(data=cbind(td, e),
        aes(x=TOC, y=td))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Total Organic Carbon (%)", y="Index of Trophic Diversity")+
+  labs(x="Total Organic Carbon (%)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -162,8 +162,12 @@ p4 <- ggplot(data=cbind(td, e),
 cor.test(formula=~td+TOC, data=cbind(td, e))
 ```
 
-```{r, fig.width=9, fig.height=8}
-plot_grid(p1, p2, p3, p4, ncol=2, align = "h", axis="b")
+```{r, fig.width=10, fig.height=3}
+plot_grid(p1, p4, ncol=2, align = "h", axis="b")
+```
+
+```{r, fig.width=10, fig.height=3}
+plot_grid(p2, p3, ncol=2, align = "h", axis="b")
 ```
 
 # Maturity index
@@ -260,8 +264,12 @@ p4 <- ggplot(data=cbind(mi, e),
 cor.test(formula=~mi+TOC, data=cbind(mi, e))
 ```
 
-```{r, fig.width=9, fig.height=8}
-plot_grid(p1, p2, p3, p4, ncol=2, align = "h", axis="b")
+```{r, fig.width=10, fig.height=3}
+plot_grid(p1, p4, ncol=2, align = "h", axis="b")
+```
+
+```{r, fig.width=10, fig.height=3}
+plot_grid(p2, p3, ncol=2, align = "h", axis="b")
 ```
 
 ```{r}
