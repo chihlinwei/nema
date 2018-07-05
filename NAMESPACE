@@ -3,3 +3,4 @@
 export(FD_MLE)
 export(FunD)
 export(raoQ)
+export(simper2)

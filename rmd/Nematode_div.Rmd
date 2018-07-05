@@ -62,6 +62,42 @@ e$Zone <- cut(e$Depth, breaks=depth.bk, labels=depth.lab)
 # Match the trait data to the species-by-sample matrix
 s <- nema_species[match(colnames(b), with(nema_species, paste(Genus, Species, sep="_"))),]
 ```
+# Abundance
+```{r, fig.width=6, fig.height=4}
+ggplot(data=cbind(Abund=nema_total$Abundance, e), 
+       aes(x=Depth, y=Abund, colour=Habitat))+
+  geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5,
+                  position=position_jitter(width=10))+
+  labs(x="Depth (m)", y="Number of Individual")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  scale_y_log10()+
+  theme_bw() %+replace% large
+
+# Linear regression
+hl <- splitBy(~Habitat, cbind(Abund=nema_total$Abundance, e))
+lapply(hl, FUN=function(x)summary(lm(log10(Abund)~Depth, data=x)))
+
+# Linear Mixed-Effects Models
+f <- lme(fixed = log10(Abund) ~ Habitat*Depth, random = ~1|Cruise, data=cbind(Abund=nema_total$Abundance, e), method = "REML", weights=varIdent(form=~1|Cruise))
+summary(f)
+```
+
+```{r, fig.width=6, fig.height=4}
+out <- summaryBy(Abund~Cruise+Station+Habitat+Zone, data=cbind(Abund=nema_total$Abundance, e), FUN=c(mean, sd))
+out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
+names(out)[5:6] <- c("Abund", "sd")
+
+ggplot(data=out, aes(x=Zone, y=Abund, ymin=Abund, ymax=Abund+sd, fill=Date))+
+  geom_errorbar(position="dodge")+
+  geom_bar(stat="identity", position="dodge", colour=gray(0, 0.2))+
+  facet_wrap(~Habitat)+
+  labs(x="Depth (m)", y="Number of Individual")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  scale_y_log10()+
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
+```
 
 # Estimate Hill Numbers
 * Bootstrap confidence interval (1000 iterations)
