@@ -10,7 +10,7 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
 ```
 
 # Reguired package
@@ -67,16 +67,23 @@ e$Zone <- cut(e$Depth, breaks=depth.bk, labels=depth.lab)
 s <- nema_species[match(colnames(b), with(nema_species, paste(Genus, Species, sep="_"))),]
 ```
 
-# Estimate Function Hill Numbers
-```{r}
+# Estimate Functional Hill Numbers
+* Bootstrap confidence interval (1000 iteration)
+```{r, eval=FALSE}
 tr <- s[, c("Buccal", "Tail", "Life.history")]
 row.names(tr) <- colnames(b)
 dis <- gowdis(tr)
 ab <- as.list(as.data.frame(t(b)))
 Q <- raoQ(ab, dis, datatype = "abundance")
-fd <- FunD(ab, dis, tau=Q, q=0:2, boot=100, datatype = "abundance")
+fd <- FunD(ab, dis, tau=Q, q=0:2, boot=1000, datatype = "abundance")
+save(fd, file="../rda/FunHillNumbers.rda")
+```
+
+```{r}
+load("../rda/FunHillNumbers.rda")
 fd <- subset(fd$forq, tau=="dmean")
 ```
+
 
 ## q = 0, tau = RaoQ of functional richness
 ```{r, fig.width=6, fig.height=4}
@@ -85,7 +92,7 @@ ggplot(data=cbind(subset(fd, q==0), e),
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
                   position=position_jitter(width=10))+
   stat_smooth(data=subset(cbind(subset(fd, q==0), e), Habitat=="Slope"), method="lm", fill="gray60", colour=viridis(2)[2])+
-  labs(x="Depth (m)", y="Number of Virtual Functional Group")+
+  labs(x="Depth (m)", y="Effective Number of Funtional Group")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
@@ -106,7 +113,7 @@ ggplot(data=cbind(subset(fd, q==1), e),
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
                   position=position_jitter(width=10))+
   #stat_smooth(method="lm", fill="gray60")+
-  labs(x="Depth (m)", y="Number of Virtual Functional Group")+
+  labs(x="Depth (m)", y="Effective Number of Funtional Group")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
@@ -120,6 +127,21 @@ f <- lme(fixed = estimate ~ Habitat*Depth, random = ~1|Cruise, data=cbind(subset
 summary(f)
 ```
 
+```{r, fig.width=6, fig.height=4}
+out <- summaryBy(estimate~Cruise+Station+Habitat+Zone, data=cbind(subset(fd, q==1), e), FUN=c(mean, sd))
+out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
+names(out)[5:6] <- c("estimate", "sd")
+
+ggplot(data=out, aes(x=Zone, y=estimate, ymin=estimate, ymax=estimate+sd, fill=Date))+
+  geom_errorbar(position="dodge")+
+  geom_bar(stat="identity", position="dodge", colour=gray(0, 0.2))+
+  facet_wrap(~Habitat)+
+  labs(x="Depth (m)", y="Effective Number of Funtional Group")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
+```
+
 ## q = 2, tau = RaoQ of effective number of dominant functional group
 ```{r, fig.width=6, fig.height=4}
 ggplot(data=cbind(subset(fd, q==2), e), 
@@ -127,7 +149,7 @@ ggplot(data=cbind(subset(fd, q==2), e),
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
                   position=position_jitter(width=10))+
   #stat_smooth(method="lm", fill="gray60")+
-  labs(x="Depth (m)", y="Number of Virtual Functional Group")+
+  labs(x="Depth (m)", y="Effective Number of Funtional Group")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
@@ -145,9 +167,9 @@ summary(f)
 ```{r, fig.width=4.5, fig.height=4}
 p1 <- ggplot(data=cbind(subset(fd, q==1), e), 
        aes(x=Speed, y=estimate, ymin=LCL, ymax=UCL))+
-  geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Current Velocity (m/s)", y="Number of Virtural Functional Group")+
+  labs(x="Modeled Current Velocity (m/s)", y="Effective Functional Group")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -158,9 +180,9 @@ cor.test(formula=~estimate+Speed, data=cbind(subset(fd, q==1), e))
 ```{r, fig.width=4.5, fig.height=4}
 p2 <- ggplot(data=cbind(subset(fd, q==1), e), 
        aes(x=over20, y=estimate, ymin=LCL, ymax=UCL))+
-  geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Duration of Erosion (hr)", y="Number of Virtural Functional Group")+
+  labs(x="Modeled Duration of Erosion (hr)", y="Effective Functional Group")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -171,9 +193,9 @@ cor.test(formula=~estimate+over20, data=cbind(subset(fd, q==1), e))
 ```{r, fig.width=4.5, fig.height=4}
 p3 <- ggplot(data=cbind(subset(fd, q==1), e), 
        aes(x=transmissometer, y=estimate, ymin=LCL, ymax=UCL))+
-  geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Light Transmission (%)", y="Number of Virtural Functional Group")+
+  labs(x="Light Transmission (%)", y="Effective Functional Group")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -185,9 +207,9 @@ cor.test(formula=~estimate+transmissometer, data=cbind(subset(fd, q==1), e))
 ```{r, fig.width=4.5, fig.height=4}
 p4 <- ggplot(data=cbind(subset(fd, q==1), e), 
        aes(x=TOC, y=estimate, ymin=LCL, ymax=UCL))+
-  geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Total Organic Carbon (%)", y="Number of Virtural Functional Group")+
+  labs(x="Total Organic Carbon (%)", y="Effective Functional Group")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -195,8 +217,13 @@ p4 <- ggplot(data=cbind(subset(fd, q==1), e),
 cor.test(formula=~estimate+TOC, data=cbind(subset(fd, q==1), e))
 ```
 
-```{r, fig.width=9, fig.height=8}
-plot_grid(p1, p2, p3, p4, ncol=2, align = "h", axis="b")
+
+```{r, fig.width=10, fig.height=3}
+plot_grid(p1, p4, ncol=2, align = "h", axis="b")
+```
+
+```{r, fig.width=10, fig.height=3}
+plot_grid(p2, p3, ncol=2, align = "h", axis="b")
 ```
 
 ```{r}

@@ -213,7 +213,7 @@ ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2, fill=Habitat, colour=Habita
   geom_point(pch=21, alpha=0.8, size=5, colour=gray(0, 0.2))+
   stat_ellipse(type="norm")+
   annotate("text", x=-0.45, y=-0.4, label=stress, size=5)+
-  geom_label_repel(data=lab1, aes(label=label), fill=viridis(3, 0.6)[2],
+  geom_label_repel(data=subset(lab1, label!=3), aes(label=label), fill=viridis(3, 0.6)[2],
              colour="white", size=10, label.padding = unit(0.2, "lines"))+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
@@ -320,7 +320,7 @@ ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2))+
   geom_point(aes(shape=Habitat), alpha=0.8, size=5, colour=gray(0, 0.2))+
   stat_ellipse(aes(linetype=Habitat), type="norm")+
   annotate("text", x=-0.45, y=-0.4, label=stress, size=5)+
-  geom_label_repel(data=lab, aes(label=label, colour=Trait), fill=gray(1, 0.6), fontface = "bold",
+  geom_label_repel(data=subset(lab, descrip!="mouthless"), aes(label=label, colour=Trait), fill=gray(1, 0.6), fontface = "bold",
                    size=10, label.padding = unit(0.2, "lines"))+
   scale_shape_manual(values=c(19, 1))+
   scale_fill_viridis(discrete = TRUE)+

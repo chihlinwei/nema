@@ -48,14 +48,58 @@ e$Zone <- cut(e$Depth, breaks=depth.bk, labels=depth.lab)
 # Match the trait data to the species-by-sample matrix
 s <- nema_species[match(colnames(b), with(nema_species, paste(Genus, Species, sep="_"))),]
 
-## ------------------------------------------------------------------------
-q0 <- iNEXT(t(b), q = 0, size=c(1, seq(10, 100, 10)), nboot=100)
-q1 <- iNEXT(t(b), q = 1, size=c(1, seq(10, 100, 10)), nboot=100)
-q2 <- iNEXT(t(b), q = 2, size=c(1, seq(10, 100, 10)), nboot=100)
+## ---- fig.width=6, fig.height=4------------------------------------------
+ggplot(data=cbind(Abund=nema_total$Abundance, e), 
+       aes(x=Depth, y=Abund, colour=Habitat))+
+  geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5,
+                  position=position_jitter(width=10))+
+  labs(x="Depth (m)", y="Number of Individual")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  scale_y_log10()+
+  theme_bw() %+replace% large
 
-h0 <- subset(ldply(q0$iNextEst, .id="Sample"), m==100)
-h1 <- subset(ldply(q1$iNextEst, .id="Sample"), m==100)
-h2 <- subset(ldply(q2$iNextEst, .id="Sample"), m==100)
+# Linear regression
+hl <- splitBy(~Habitat, cbind(Abund=nema_total$Abundance, e))
+lapply(hl, FUN=function(x)summary(lm(log10(Abund)~Depth, data=x)))
+
+# Linear Mixed-Effects Models
+f <- lme(fixed = log10(Abund) ~ Habitat*Depth, random = ~1|Cruise, data=cbind(Abund=nema_total$Abundance, e), method = "REML", weights=varIdent(form=~1|Cruise))
+summary(f)
+
+## ---- fig.width=6, fig.height=4------------------------------------------
+out <- summaryBy(Abund~Cruise+Station+Habitat+Zone, data=cbind(Abund=nema_total$Abundance, e), FUN=c(mean, sd))
+out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
+names(out)[5:6] <- c("Abund", "sd")
+
+ggplot(data=out, aes(x=Zone, y=Abund, ymin=Abund, ymax=Abund+sd, fill=Date))+
+  geom_errorbar(position="dodge")+
+  geom_bar(stat="identity", position="dodge", colour=gray(0, 0.2))+
+  facet_wrap(~Habitat)+
+  labs(x="Depth (m)", y="Number of Individual")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  scale_y_log10()+
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
+
+## ---- eval=FALSE---------------------------------------------------------
+#  q0 <- iNEXT(t(b), q = 0, size=1:100, nboot=1000)
+#  q1 <- iNEXT(t(b), q = 1, size=1:100, nboot=1000)
+#  q2 <- iNEXT(t(b), q = 2, size=1:100, nboot=1000)
+#  save(list=c("q0", "q1", "q2"), file="../rda/HillNumbers.rda")
+
+## ------------------------------------------------------------------------
+load("../rda/HillNumbers.rda")
+
+# 50% sample completeness
+#h0 <- ldply(lapply(q0$iNextEst, FUN=function(x)subset(x, SC>0.5)[1,]), .id="Sample")
+#h1 <- ldply(lapply(q1$iNextEst, FUN=function(x)subset(x, SC>0.5)[1,]), .id="Sample")
+#h2 <- ldply(lapply(q2$iNextEst, FUN=function(x)subset(x, SC>0.5)[1,]), .id="Sample")
+
+# 50 randomly selected individual
+h0 <- subset(ldply(q0$iNextEst, .id="Sample"), m==50)
+h1 <- subset(ldply(q1$iNextEst, .id="Sample"), m==50)
+h2 <- subset(ldply(q2$iNextEst, .id="Sample"), m==50)
 
 ## ---- fig.width=6, fig.height=4------------------------------------------
 ggplot(data=cbind(h0, e), 
@@ -96,6 +140,20 @@ f <- lme(fixed = qD ~ Habitat*Depth, random = ~1|Cruise, data=subset(cbind(h1, e
 summary(f)
 
 ## ---- fig.width=6, fig.height=4------------------------------------------
+out <- summaryBy(qD~Cruise+Station+Habitat+Zone, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"), FUN=c(mean, sd))
+out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
+names(out)[5:6] <- c("qD", "sd")
+
+ggplot(data=out, aes(x=Zone, y=qD, ymin=qD, ymax=qD+sd, fill=Date))+
+  geom_errorbar(position="dodge")+
+  geom_bar(stat="identity", position="dodge", colour=gray(0, 0.2))+
+  facet_wrap(~Habitat)+
+  labs(x="Depth (m)", y="Effective Number of Species")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
+
+## ---- fig.width=6, fig.height=4------------------------------------------
 ggplot(data=subset(cbind(h2, e), Sample!="OR1_1126_GC2_1_9_2" & Sample!="OR1_1126_GC2_1_9_3"), 
        aes(x=Depth, y=qD, ymin=qD.LCL, ymax=qD.UCL, colour=Habitat))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
@@ -117,9 +175,9 @@ summary(f)
 ## ---- fig.width=4.5, fig.height=4----------------------------------------
 p1 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"), 
        aes(x=Speed, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
-  geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Current Velocity (m/s)", y="Effective Number of Species")+
+  labs(x="Modeled Current Velocity (m/s)", y="Effective Species")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -129,9 +187,9 @@ cor.test(formula=~qD+Speed, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_
 ## ---- fig.width=4.5, fig.height=4----------------------------------------
 p2 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"), 
        aes(x=over20, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
-  geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Duration of Erosion (hr)", y="Effective Number of Species")+
+  labs(x="Modeled Duration of Erosion (hr)", y="Effective Species")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -141,9 +199,9 @@ cor.test(formula=~qD+over20, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9
 ## ---- fig.width=4.5, fig.height=4----------------------------------------
 p3 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"), 
        aes(x=transmissometer, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
-  geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Light Transmission (%)", y="Effective Number of Species")+
+  labs(x="Light Transmission (%)", y="Effective Species")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -153,20 +211,23 @@ cor.test(formula=~qD+transmissometer, data=subset(cbind(h1, e), Sample!="OR1_112
 ## ---- fig.width=4.5, fig.height=4----------------------------------------
 p4 <- ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"), 
        aes(x=TOC, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
-  geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Total Organic Carbon (%)", y="Effective Number of Species")+
+  labs(x="Total Organic Carbon (%)", y="Effective Species")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
 cor.test(formula=~qD+TOC, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"))
 
-## ---- fig.width=9, fig.height=8------------------------------------------
-plot_grid(p1, p2, p3, p4, ncol=2, align = "h", axis="b")
+## ---- fig.width=10, fig.height=3-----------------------------------------
+plot_grid(p1, p4, ncol=2, align = "h", axis="b")
+
+## ---- fig.width=10, fig.height=3-----------------------------------------
+plot_grid(p2, p3, ncol=2, align = "h", axis="b")
 
 ## ------------------------------------------------------------------------
-out <- cbind(e[, 1:5], "Indiv"=rowSums(b), "0D"=h0$qD, "1D" = h1$qD, "2D"=h2$qD)
+out <- cbind(e[, 1:5], q0$DataInfo[,2:4], "0D"=h0$qD, "1D" = h1$qD, "2D"=h2$qD)
 row.names(out) <- NULL
 # Outliers, the confidence interval too large 
 out[out$Cruise=="OR1_1126" & out$Station=="GC2" & out$Subcore == 2, c("2D")] <- NA

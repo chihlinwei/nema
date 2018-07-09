@@ -1,5 +1,5 @@
 ## ----setup, include=FALSE------------------------------------------------
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
 
 ## ------------------------------------------------------------------------
 library(nema)
@@ -53,7 +53,7 @@ s <- nema_species[match(colnames(b), with(nema_species, paste(Genus, Species, se
 tr <- aggregate(t(b), by=list(s$Buccal), FUN=sum)
 buc <- data.frame(t(tr[,-1]))
 names(buc) <- tr$Group.1
-td <- rowSums(decostand(buc, "total")^2)
+td <- 1/rowSums(decostand(buc, "total")^2)
 
 ## ---- fig.width=6, fig.height=4------------------------------------------
 ggplot(data=cbind(td, e), 
@@ -74,12 +74,26 @@ lapply(hl, FUN=function(x)summary(lm(td~Depth, data=x)))
 f <- lme(fixed = td ~ Habitat*Depth, random = ~1|Cruise, data=cbind(td, e), method = "REML", weights=varIdent(form=~1|Cruise))
 summary(f)
 
+## ---- fig.width=6, fig.height=4------------------------------------------
+out <- summaryBy(td~Cruise+Station+Habitat+Zone, data=cbind(td, e), FUN=c(mean, sd))
+out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
+names(out)[5:6] <- c("td", "sd")
+
+ggplot(data=out, aes(x=Zone, y=td, ymin=td, ymax=td+sd, fill=Date))+
+  geom_errorbar(position="dodge")+
+  geom_bar(stat="identity", position="dodge", colour=gray(0, 0.2))+
+  facet_wrap(~Habitat)+
+  labs(x="Depth (m)", y="Index of Trophic Diversity")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
+
 ## ---- fig.width=4.5, fig.height=4----------------------------------------
 p1 <- ggplot(data=cbind(td, e), 
        aes(x=Speed, y=td))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Current Velocity (m/s)", y="Index of Trophic Diversity")+
+  labs(x="Modeled Current Velocity (m/s)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -91,7 +105,7 @@ p2 <- ggplot(data=cbind(td, e),
        aes(x=over20, y=td))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Duration of Erosion (hr)", y="Index of Trophic Diversity")+
+  labs(x="Modeled Duration of Erosion (hr)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -103,7 +117,7 @@ p3 <- ggplot(data=cbind(td, e),
        aes(x=transmissometer, y=td))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Light Transmission (%)", y="Index of Trophic Diversity")+
+  labs(x="Light Transmission (%)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -115,15 +129,18 @@ p4 <- ggplot(data=cbind(td, e),
        aes(x=TOC, y=td))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Total Organic Carbon (%)", y="Index of Trophic Diversity")+
+  labs(x="Total Organic Carbon (%)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
 cor.test(formula=~td+TOC, data=cbind(td, e))
 
-## ---- fig.width=9, fig.height=8------------------------------------------
-plot_grid(p1, p2, p3, p4, ncol=2, align = "h", axis="b")
+## ---- fig.width=10, fig.height=3-----------------------------------------
+plot_grid(p1, p4, ncol=2, align = "h", axis="b")
+
+## ---- fig.width=10, fig.height=3-----------------------------------------
+plot_grid(p2, p3, ncol=2, align = "h", axis="b")
 
 ## ------------------------------------------------------------------------
 mi <- colSums(t(decostand(b, "total"))*s$Life.history)
@@ -134,7 +151,7 @@ ggplot(data=cbind(mi, e),
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size =5)+
   stat_smooth(data=subset(cbind(mi, e), Habitat=="Slope"), 
               method="lm", fill="gray60", colour=viridis(2)[2])+
-  labs(x="Depth (m)", y="Index of Trophic Diversity")+
+  labs(x="Depth (m)", y="Maturity Index")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
@@ -146,6 +163,20 @@ lapply(hl, FUN=function(x)summary(lm(mi~Depth, data=x)))
 # Linear Mixed-Effects Models
 f <- lme(fixed = mi ~ Habitat*Depth, random = ~1|Cruise, data=cbind(mi, e), method = "REML", weights=varIdent(form=~1|Cruise))
 summary(f)
+
+## ---- fig.width=6, fig.height=4------------------------------------------
+out <- summaryBy(mi~Cruise+Station+Habitat+Zone, data=cbind(mi, e), FUN=c(mean, sd))
+out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
+names(out)[5:6] <- c("mi", "sd")
+
+ggplot(data=out, aes(x=Zone, y=mi, ymin=mi, ymax=mi+sd, fill=Date))+
+  geom_errorbar(position="dodge")+
+  geom_bar(stat="identity", position="dodge", colour=gray(0, 0.2))+
+  facet_wrap(~Habitat)+
+  labs(x="Depth (m)", y="Maturity Index")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
 
 ## ---- fig.width=4.5, fig.height=4----------------------------------------
 p1 <- ggplot(data=cbind(mi, e), 
@@ -195,8 +226,11 @@ p4 <- ggplot(data=cbind(mi, e),
 
 cor.test(formula=~mi+TOC, data=cbind(mi, e))
 
-## ---- fig.width=9, fig.height=8------------------------------------------
-plot_grid(p1, p2, p3, p4, ncol=2, align = "h", axis="b")
+## ---- fig.width=10, fig.height=3-----------------------------------------
+plot_grid(p1, p4, ncol=2, align = "h", axis="b")
+
+## ---- fig.width=10, fig.height=3-----------------------------------------
+plot_grid(p2, p3, ncol=2, align = "h", axis="b")
 
 ## ------------------------------------------------------------------------
 out <- cbind(e[,1:5], "TD"=td, "MI"=mi)

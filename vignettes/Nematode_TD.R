@@ -3,7 +3,7 @@ knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
 
 ## ------------------------------------------------------------------------
 library(nema)
-library(FD)
+library(iNEXT)
 library(ggplot2)
 library(reshape2)
 library(vegan)
@@ -30,7 +30,7 @@ no_strip <- theme(strip.background = element_rect(colour=NA, fill=NA),
 # Convert to species-by-sample matrix
 b <- acast(nema_abund, Cruise+Station+Deployment+Tube+Subcore~Genus+Species, fill=0)
 # Multiply the relative abundance by total abundance
-b <- ceiling(decostand(b, "total")*nema_total$Abundance)
+#b <- ceiling(decostand(b, "total")*nema_total$Abundance)
 
 # Match environmental data to neamtode sample
 e <- ldply(strsplit(row.names(b), split="_"))
@@ -48,137 +48,148 @@ e$Zone <- cut(e$Depth, breaks=depth.bk, labels=depth.lab)
 # Match the trait data to the species-by-sample matrix
 s <- nema_species[match(colnames(b), with(nema_species, paste(Genus, Species, sep="_"))),]
 
-## ---- eval=FALSE---------------------------------------------------------
-#  tr <- s[, c("Buccal", "Tail", "Life.history")]
-#  row.names(tr) <- colnames(b)
-#  dis <- gowdis(tr)
-#  ab <- as.list(as.data.frame(t(b)))
-#  Q <- raoQ(ab, dis, datatype = "abundance")
-#  fd <- FunD(ab, dis, tau=Q, q=0:2, boot=1000, datatype = "abundance")
-#  save(fd, file="../rda/FunHillNumbers.rda")
+## ------------------------------------------------------------------------
+tr <- aggregate(t(b), by=list(s$Buccal), FUN=sum)
+buc <- data.frame(t(tr[,-1]))
+names(buc) <- tr$Group.1
+
+## ---- eval = FALSE-------------------------------------------------------
+#  q0 <- iNEXT(t(buc), q = 0, size=1:100, nboot=1000)
+#  q1 <- iNEXT(t(buc), q = 1, size=1:100, nboot=1000)
+#  q2 <- iNEXT(t(buc), q = 2, size=1:100, nboot=1000)
+#  save(list=c("q0", "q1", "q2"), file="../rda/TrophicHillNumbers.rda")
 
 ## ------------------------------------------------------------------------
-load("../rda/FunHillNumbers.rda")
-fd <- subset(fd$forq, tau=="dmean")
+load("../rda/TrophicHillNumbers.rda")
+
+# 50% sample completeness
+#h0 <- ldply(lapply(q0$iNextEst, FUN=function(x)subset(x, SC>0.5)[1,]), .id="Sample")
+#h1 <- ldply(lapply(q1$iNextEst, FUN=function(x)subset(x, SC>0.5)[1,]), .id="Sample")
+#h2 <- ldply(lapply(q2$iNextEst, FUN=function(x)subset(x, SC>0.5)[1,]), .id="Sample")
+
+# 50 randomly selected individual
+h0 <- subset(ldply(q0$iNextEst, .id="Sample"), m==50)
+h1 <- subset(ldply(q1$iNextEst, .id="Sample"), m==50)
+h2 <- subset(ldply(q2$iNextEst, .id="Sample"), m==50)
 
 ## ---- fig.width=6, fig.height=4------------------------------------------
-ggplot(data=cbind(subset(fd, q==0), e), 
-       aes(x=Depth, y=estimate, ymin=LCL, ymax=UCL, colour=Habitat))+
+ggplot(data=cbind(h0, e), 
+       aes(x=Depth, y=qD, ymin=qD.LCL, ymax=qD.UCL, colour=Habitat))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
                   position=position_jitter(width=10))+
-  stat_smooth(data=subset(cbind(subset(fd, q==0), e), Habitat=="Slope"), method="lm", fill="gray60", colour=viridis(2)[2])+
-  labs(x="Depth (m)", y="Effective Number of Funtional Group")+
+  stat_smooth(data=subset(cbind(h0, e), Habitat=="Canyon"), method="lm", fill="gray60")+
+  labs(x="Depth (m)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
 
 # Linear regression
-hl <- splitBy(~Habitat, cbind(subset(fd, q==0), e))
-lapply(hl, FUN=function(x)summary(lm(estimate~Depth, data=x)))
+hl <- splitBy(~Habitat, subset(cbind(h0, e), Sample!="OR1_1126_GC2_1_9_3"))
+lapply(hl, FUN=function(x)summary(lm(qD~Depth, data=x)))
 
 # Linear Mixed-Effects Models
-f <- lme(fixed = estimate ~ Habitat*Depth, random = ~1|Cruise, data=cbind(subset(fd, q==0), e), method = "REML", weights=varIdent(form=~1|Cruise))
+f <- lme(fixed = qD ~ Habitat*Depth, random = ~1|Cruise, data=cbind(h0, e), method = "REML", weights=varIdent(form=~1|Cruise))
 summary(f)
 
 ## ---- fig.width=6, fig.height=4------------------------------------------
-ggplot(data=cbind(subset(fd, q==1), e), 
-       aes(x=Depth, y=estimate, ymin=LCL, ymax=UCL, colour=Habitat))+
+ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"), 
+       aes(x=Depth, y=qD, ymin=qD.LCL, ymax=qD.UCL, colour=Habitat))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
                   position=position_jitter(width=10))+
-  #stat_smooth(method="lm", fill="gray60")+
-  labs(x="Depth (m)", y="Effective Number of Funtional Group")+
+  stat_smooth(data=subset(cbind(h1, e), Habitat=="Slope"), method="lm", colour=viridis(2)[2])+
+  labs(x="Depth (m)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
 
 # Linear regression
-hl <- splitBy(~Habitat, cbind(subset(fd, q==1), e))
-lapply(hl, FUN=function(x)summary(lm(estimate~Depth, data=x)))
+hl <- splitBy(~Habitat, subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"))
+lapply(hl, FUN=function(x)summary(lm(qD~Depth, data=x)))
 
 # Linear Mixed-Effects Models
-f <- lme(fixed = estimate ~ Habitat*Depth, random = ~1|Cruise, data=cbind(subset(fd, q==1), e), method = "REML", weights=varIdent(form=~1|Cruise))
+f <- lme(fixed = qD ~ Habitat*Depth, random = ~1|Cruise, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"), method = "REML", weights=varIdent(form=~1|Cruise))
 summary(f)
 
 ## ---- fig.width=6, fig.height=4------------------------------------------
-out <- summaryBy(estimate~Cruise+Station+Habitat+Zone, data=cbind(subset(fd, q==1), e), FUN=c(mean, sd))
+ggplot(data=subset(cbind(h2, e), Sample!="OR1_1126_GC2_1_9_2"), 
+       aes(x=Depth, y=qD, ymin=qD.LCL, ymax=qD.UCL, colour=Habitat))+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
+                  position=position_jitter(width=10))+
+  stat_smooth(data=subset(cbind(h2, e), Habitat=="Slope"), method="lm", colour=viridis(2)[2])+
+  labs(x="Depth (m)", y="Trophic Diversity")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large
+
+# Linear regression
+hl <- splitBy(~Habitat, subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"))
+lapply(hl, FUN=function(x)summary(lm(qD~Depth, data=x)))
+
+# Linear Mixed-Effects Models
+f <- lme(fixed = qD ~ Habitat*Depth, random = ~1|Cruise, data=subset(cbind(h2, e), Sample!="OR1_1126_GC2_1_9_2"), method = "REML", weights=varIdent(form=~1|Cruise))
+summary(f)
+
+## ---- fig.width=6, fig.height=4------------------------------------------
+out <- summaryBy(qD~Cruise+Station+Habitat+Zone, data=subset(cbind(h2, e), Sample!="OR1_1126_GC2_1_9_2"), FUN=c(mean, sd))
 out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
-names(out)[5:6] <- c("estimate", "sd")
+names(out)[5:6] <- c("qD", "sd")
 
-ggplot(data=out, aes(x=Zone, y=estimate, ymin=estimate, ymax=estimate+sd, fill=Date))+
+ggplot(data=out, aes(x=Zone, y=qD, ymin=qD, ymax=qD+sd, fill=Date))+
   geom_errorbar(position="dodge")+
   geom_bar(stat="identity", position="dodge", colour=gray(0, 0.2))+
   facet_wrap(~Habitat)+
-  labs(x="Depth (m)", y="Effective Number of Funtional Group")+
+  labs(x="Depth (m)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
 
-## ---- fig.width=6, fig.height=4------------------------------------------
-ggplot(data=cbind(subset(fd, q==2), e), 
-       aes(x=Depth, y=estimate, ymin=LCL, ymax=UCL, colour=Habitat))+
-  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
-                  position=position_jitter(width=10))+
-  #stat_smooth(method="lm", fill="gray60")+
-  labs(x="Depth (m)", y="Effective Number of Funtional Group")+
-  scale_fill_viridis(discrete = TRUE)+
-  scale_color_viridis(discrete = TRUE)+
-  theme_bw() %+replace% large
-
-# Linear regression
-hl <- splitBy(~Habitat, cbind(subset(fd, q==2), e))
-lapply(hl, FUN=function(x)summary(lm(estimate~Depth, data=x)))
-
-# Linear Mixed-Effects Models
-f <- lme(fixed = estimate ~ Habitat*Depth, random = ~1|Cruise, data=cbind(subset(fd, q==2), e), method = "REML", weights=varIdent(form=~1|Cruise))
-summary(f)
-
 ## ---- fig.width=4.5, fig.height=4----------------------------------------
-p1 <- ggplot(data=cbind(subset(fd, q==1), e), 
-       aes(x=Speed, y=estimate, ymin=LCL, ymax=UCL))+
+p1 <- ggplot(data=subset(cbind(h2, e), Sample!="OR1_1126_GC2_1_9_2"), 
+       aes(x=Speed, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Current Velocity (m/s)", y="Effective Functional Group")+
+  labs(x="Modeled Current Velocity (m/s)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
-cor.test(formula=~estimate+Speed, data=cbind(subset(fd, q==1), e))
+cor.test(formula=~qD+Speed, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"))
 
 ## ---- fig.width=4.5, fig.height=4----------------------------------------
-p2 <- ggplot(data=cbind(subset(fd, q==1), e), 
-       aes(x=over20, y=estimate, ymin=LCL, ymax=UCL))+
+p2 <- ggplot(data=subset(cbind(h2, e), Sample!="OR1_1126_GC2_1_9_2"), 
+       aes(x=over20, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Duration of Erosion (hr)", y="Effective Functional Group")+
+  labs(x="Modeled Duration of Erosion (hr)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
-cor.test(formula=~estimate+over20, data=cbind(subset(fd, q==1), e))
+cor.test(formula=~qD+over20, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"))
 
 ## ---- fig.width=4.5, fig.height=4----------------------------------------
-p3 <- ggplot(data=cbind(subset(fd, q==1), e), 
-       aes(x=transmissometer, y=estimate, ymin=LCL, ymax=UCL))+
+p3 <- ggplot(data=subset(cbind(h2, e), Sample!="OR1_1126_GC2_1_9_2"), 
+       aes(x=transmissometer, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Light Transmission (%)", y="Effective Functional Group")+
+  labs(x="Light Transmission (%)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
-cor.test(formula=~estimate+transmissometer, data=cbind(subset(fd, q==1), e))
+cor.test(formula=~qD+transmissometer, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"))
 
 ## ---- fig.width=4.5, fig.height=4----------------------------------------
-p4 <- ggplot(data=cbind(subset(fd, q==1), e), 
-       aes(x=TOC, y=estimate, ymin=LCL, ymax=UCL))+
+p4 <- ggplot(data=subset(cbind(h2, e), Sample!="OR1_1126_GC2_1_9_2"), 
+       aes(x=TOC, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Total Organic Carbon (%)", y="Effective Functional Group")+
+  labs(x="Total Organic Carbon (%)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
-cor.test(formula=~estimate+TOC, data=cbind(subset(fd, q==1), e))
+cor.test(formula=~qD+TOC, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_2"))
 
 ## ---- fig.width=10, fig.height=3-----------------------------------------
 plot_grid(p1, p4, ncol=2, align = "h", axis="b")
@@ -187,7 +198,9 @@ plot_grid(p1, p4, ncol=2, align = "h", axis="b")
 plot_grid(p2, p3, ncol=2, align = "h", axis="b")
 
 ## ------------------------------------------------------------------------
-out <- cbind(nema_total, "0FD"=subset(fd, q==0)$estimate, "1FD" = subset(fd, q==1)$estimate, "2FD"=subset(fd, q==2)$estimate)
+out <- cbind(e[, 1:5], "Indiv"=rowSums(b), "0TD"=h0$qD, "1TD" = h1$qD, "2TD"=h2$qD)
 row.names(out) <- NULL
+# Outliers, the confidence interval too large 
+out[out$Cruise=="OR1_1126" & out$Station=="GC2" & out$Subcore == 2, c("1TD", "2TD")] <- NA
 kable(out)
 
