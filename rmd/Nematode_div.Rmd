@@ -144,6 +144,19 @@ f <- lme(fixed = qD ~ Habitat*Depth, random = ~1|Cruise, data=cbind(h0, e), meth
 summary(f)
 ```
 
+```{r, fig.width=6, fig.height=4}
+out <- cbind(h0, Abund=nema_total$Abundance,e)
+out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
+ggplot(data=out, aes(x=Abund, y=qD, colour=Habitat, shape=Date))+
+  geom_point(size=5)+
+  labs(x="Number of Individual", y="Effective Number of Species")+
+  scale_shape_manual(values=c(1, 19))+
+  scale_x_log10()+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large
+```
+
+
 ## q=1 or exponential Shannon diversity
 ```{r, fig.width=6, fig.height=4}
 ggplot(data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"), 
@@ -163,6 +176,18 @@ lapply(hl, FUN=function(x)summary(lm(qD~Depth, data=x)))
 # Linear Mixed-Effects Models
 f <- lme(fixed = qD ~ Habitat*Depth, random = ~1|Cruise, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"), method = "REML", weights=varIdent(form=~1|Cruise))
 summary(f)
+```
+
+```{r, fig.width=6, fig.height=4}
+out <- subset(cbind(h1, Abund=nema_total$Abundance,e), Sample!="OR1_1126_GC2_1_9_3")
+out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
+ggplot(data=out, aes(x=Abund, y=qD, colour=Habitat, shape=Date))+
+  geom_point(size=5)+
+  labs(x="Number of Individual", y="Effective Number of Species")+
+  scale_shape_manual(values=c(1, 19))+
+  scale_x_log10()+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large
 ```
 
 ```{r, fig.width=6, fig.height=4}
@@ -199,6 +224,18 @@ lapply(hl, FUN=function(x)summary(lm(qD~Depth, data=x)))
 # Linear Mixed-Effects Models
 f <- lme(fixed = qD ~ Habitat*Depth, random = ~1|Cruise, data=subset(cbind(h2, e), Sample!="OR1_1126_GC2_1_9_2" & Sample!="OR1_1126_GC2_1_9_3"), method = "REML", weights=varIdent(form=~1|Cruise))
 summary(f)
+```
+
+```{r, fig.width=6, fig.height=4}
+out <- subset(cbind(h2, Abund=nema_total$Abundance,e), Sample!="OR1_1126_GC2_1_9_2" & Sample!="OR1_1126_GC2_1_9_3")
+out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
+ggplot(data=out, aes(x=Abund, y=qD, colour=Habitat, shape=Date))+
+  geom_point(size=5)+
+  labs(x="Number of Individual", y="Effective Number of Species")+
+  scale_shape_manual(values=c(1, 19))+
+  scale_x_log10()+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large
 ```
 
 # Correlation bettwen exponential Shannon (q=1) and environmental factor
