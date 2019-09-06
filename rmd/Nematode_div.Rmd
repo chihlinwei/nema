@@ -102,9 +102,9 @@ ggplot(data=out, aes(x=Zone, y=Abund, ymin=Abund, ymax=Abund+sd, fill=Date))+
 # Estimate Hill Numbers
 * Bootstrap confidence interval (1000 iterations)
 ```{r, eval=FALSE}
-q0 <- iNEXT(t(b), q = 0, size=1:100, nboot=1000)
-q1 <- iNEXT(t(b), q = 1, size=1:100, nboot=1000)
-q2 <- iNEXT(t(b), q = 2, size=1:100, nboot=1000)
+q0 <- iNEXT(t(b), q = 0, size=1:200, nboot=1000)
+q1 <- iNEXT(t(b), q = 1, size=1:200, nboot=1000)
+q2 <- iNEXT(t(b), q = 2, size=1:200, nboot=1000)
 save(list=c("q0", "q1", "q2"), file="../rda/HillNumbers.rda")
 ```
 
