@@ -1,5 +1,5 @@
 ---
-title: "Nematode Diversity standardized by 80.8% sample completeness"
+title: "Nematode Diversity standardized by 100 individuals"
 author: "Wei, C.-L., Liao, J.-X."
 date: "`r Sys.Date()`"
 output: html_document
@@ -260,35 +260,35 @@ Fig. X. Sample size as a function of sample coverage based on species richness (
 
 ```{r}
 # ~80.7% sample completeness
-h0 <- lapply(q0$iNextEst, FUN=function(x) {
-  d<-abs(x$SC-0.807)
-  o <- subset(x, d==min(d))
-  o[dim(o)[1],]
-  }) %>% ldply(.id="Sample")
-round(mean(h0$SC), 3)
+#h0 <- lapply(q0$iNextEst, FUN=function(x) {
+#  d<-abs(x$SC-0.807)
+#  o <- subset(x, d==min(d))
+#  o[dim(o)[1],]
+#  }) %>% ldply(.id="Sample")
+#round(mean(h0$SC), 3)
 
-h1 <- lapply(q1$iNextEst, FUN=function(x) {
-  d<-abs(x$SC-0.807)
-  o <- subset(x, d==min(d))
-  o[dim(o)[1],]
-  }) %>% ldply(.id="Sample")
-round(mean(h1$SC), 3)
+#h1 <- lapply(q1$iNextEst, FUN=function(x) {
+#  d<-abs(x$SC-0.807)
+#  o <- subset(x, d==min(d))
+#  o[dim(o)[1],]
+#  }) %>% ldply(.id="Sample")
+#round(mean(h1$SC), 3)
 
-h2 <- lapply(q2$iNextEst, FUN=function(x) {
-  d<-abs(x$SC-0.807)
-  o <- subset(x, d==min(d))
-  o[dim(o)[1],]
-  }) %>% ldply(.id="Sample")
+#h2 <- lapply(q2$iNextEst, FUN=function(x) {
+#  d<-abs(x$SC-0.807)
+#  o <- subset(x, d==min(d))
+#  o[dim(o)[1],]
+#  }) %>% ldply(.id="Sample")
 # Set the bad diversity estimates to NA
-h2[h2$Sample == "OR1_1126_GC2_1_9_3", c("qD", "qD.LCL", "qD.UCL", "SC", "SC.LCL", "SC.UCL")] <- NA
-round(mean(h2$SC, na.rm=TRUE), 3)
+#h2[h2$Sample == "OR1_1126_GC2_1_9_3", c("qD", "qD.LCL", "qD.UCL", "SC", "SC.LCL", "SC.UCL")] <- NA
+#round(mean(h2$SC, na.rm=TRUE), 3)
 
 # 100 randomly selected individual
-#h0 <- subset(ldply(q0$iNextEst, .id="Sample"), m==100)
-#h1 <- subset(ldply(q1$iNextEst, .id="Sample"), m==100)
-#h2 <- subset(ldply(q2$iNextEst, .id="Sample"), m==100)
+h0 <- subset(ldply(q0$iNextEst, .id="Sample"), m==100)
+h1 <- subset(ldply(q1$iNextEst, .id="Sample"), m==100)
+h2 <- subset(ldply(q2$iNextEst, .id="Sample"), m==100)
 # Set the bad diversity estimates to NA
-#h2[h2$Sample == "OR1_1126_GC2_1_9_2"|h2$Sample == "OR1_1126_GC2_1_9_3", c("qD", "qD.LCL", "qD.UCL", "SC", "SC.LCL", "SC.UCL")] <- NA
+h2[h2$Sample == "OR1_1126_GC2_1_9_2"|h2$Sample == "OR1_1126_GC2_1_9_3", c("qD", "qD.LCL", "qD.UCL", "SC", "SC.LCL", "SC.UCL")] <- NA
 ```
 
 
