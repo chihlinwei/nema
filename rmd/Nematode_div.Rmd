@@ -120,7 +120,7 @@ ggplot()+
             aes(x=m, y=qD, colour=method, group=Sample))+
   geom_point(data= subset(h, method=="observed"), 
              aes(x=m, y=qD, group=Sample))+
-  geom_vline(xintercept = 50, linetype=3)+
+  geom_vline(xintercept = c(50, 100, 150), linetype=3)+
   facet_wrap(~order, scale="free")+
   labs(x = "Numbers of Individuals", y = "Effective Number of Species",
        colour="Method")+
@@ -133,7 +133,7 @@ ggplot()+
             aes(x=m, y=qD, colour=method, group=Sample))+
   geom_point(data= subset(h, method=="observed"), 
              aes(x=m, y=qD, group=Sample))+
-  geom_vline(xintercept = 50, linetype=3)+
+  geom_vline(xintercept = c(50, 100, 150), linetype=3)+
   facet_wrap(~order, scale="free")+
   labs(x = "Numbers of Individuals", y = "Effective Number of Species",
        colour="Method")+
@@ -219,7 +219,7 @@ ggplot()+
             aes(x=m, y=qD, colour=method, group=Sample))+
   geom_point(data= subset(h, method=="observed"), 
              aes(x=m, y=qD, group=Sample))+
-  geom_vline(xintercept = 50, linetype=3)+
+  geom_vline(xintercept = c(50, 100, 150), linetype=3)+
   facet_wrap(~order, scale="free")+
   labs(x = "Numbers of Individuals", y = "Effective Number of Species",
        colour="Method")+
