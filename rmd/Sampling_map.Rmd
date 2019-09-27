@@ -1,0 +1,80 @@
+---
+title: "Sampling Map"
+author: "Chih-Lin Wei"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+library(nema)
+library(TWBathyMap)
+library(doBy)
+library(knitr)
+library(maptools)
+library(rgdal)
+```
+
+```{r, fig.width=6, fig.height=6}
+e <- extent(119.1, 122.2, 21.6, 25.5)
+r <- crop(bathy, e)
+r <- projectRaster(r, res=0.001, crs="+proj=longlat")
+lon <- c(120.1, 120.1, 120.5, 120.5, 120.1)
+lat <- c(22.1, 22.5, 22.5, 22.1, 22.1)
+b <- SpatialPolygons(list(Polygons(list(Polygon(cbind(lon, lat))), 1)))
+
+tbspplot <- 
+  function(x, ...){
+  slope <- terrain(x, opt="slope")
+  aspect <- terrain(x, opt="aspect")
+  hill <- hillShade(slope, aspect, 80, 270)
+  p2 <- spplot(hill, col.regions=grey(0:100/100), cut=100, colorkey=FALSE)
+  pal <- tb.colors(x)
+  p1 <- spplot(x, col.regions=alpha(pal$col, 0.6), at=pal$breaks,
+               colorkey=list(space="top", labels=list(cex=1)),
+               scales=list(draw = TRUE, cex=1)
+               ,...)
+p1+as.layer(p2, under=T)
+}
+
+extra <- function(...){
+         panel.levelplot.raster(...)
+         sp.polygons(b)
+}
+tbspplot(r, panel=extra, )
+```
+
+
+
+```{r}
+library(swtmap)
+e <- extent(120.1, 120.5, 22.1, 22.5)
+r <- crop(bathy, e)
+r <- projectRaster(r, res=0.0005, crs="+proj=longlat")
+loc <- nema_cruise[,c("Habitat", "Cruise", "Station", "Longitude", "Latitude", "Depth")]
+loc <- summaryBy(Longitude+Latitude+Depth~Habitat+Station, loc, keep.names = TRUE)
+kable(loc)
+```
+
+```{r}
+coordinates(loc) <- c("Longitude", "Latitude")
+projection(loc) <- "+proj=longlat"
+
+isobath<- rasterToContour(r, levels=seq(-1200, 0, by=200))
+
+extra <- function(...){
+         panel.levelplot.raster(...)
+         sp.lines(isobath, col="gray30")
+         sp.points(loc, cex=1.5, pch=19, col="black")
+         sp.pointLabel(loc, labels=loc$Station, allowSmallOverlap=FALSE)
+         SpatialPolygonsRescale(layout.scale.bar(), offset=c(120.28, 22.46), scale = 10/(111.321*cos(22.46*pi/180)), fill = c("white","black"), col = "black")
+         sp.text(loc = c(120.28, 22.475), "0")
+         sp.text(loc = c(120.38, 22.475), "10 km")
+}
+```
+
+
+```{r, fig.width=7, fig.height=6}
+tbspplot(r, panel=extra)
+```
+
