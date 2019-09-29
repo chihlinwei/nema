@@ -299,7 +299,7 @@ ggplot(data=cbind(h0, e),
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
                   position=position_jitter(width=10))+
   stat_smooth(method="lm", fill="gray60")+
-  labs(x="Depth (m)", y="Effective Number of Species")+
+  labs(x="Depth (m)", y="Species Richness")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
@@ -318,13 +318,28 @@ out <- cbind(h0, Abund=nema_total$Abundance,e)
 out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
 ggplot(data=out, aes(x=Abund, y=qD, colour=Habitat, shape=Date))+
   geom_point(size=5)+
-  labs(x="Number of Individual", y="Effective Number of Species")+
+  labs(x="Number of Individual", y="Species Richness")+
   scale_shape_manual(values=c(1, 19))+
   scale_x_log10()+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
 ```
 
+
+```{r, fig.width=6, fig.height=4}
+out <- summaryBy(qD~Cruise+Station+Habitat+Zone, data=cbind(h0, e), FUN=c(mean, sd))
+out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
+names(out)[5:6] <- c("qD", "sd")
+
+ggplot(data=out, aes(x=Zone, y=qD, ymin=qD, ymax=qD+sd, fill=Date))+
+  geom_errorbar(position="dodge")+
+  geom_bar(stat="identity", position="dodge", colour=gray(0, 0.2))+
+  facet_wrap(~Habitat)+
+  labs(x="Depth (m)", y="Species Richness")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
+```
 
 ## q=1 or exponential Shannon diversity
 ```{r, fig.width=6, fig.height=4}
@@ -333,7 +348,7 @@ ggplot(data=cbind(h1, e),
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
                   position=position_jitter(width=10))+
   stat_smooth(method="lm", fill="gray60")+
-  labs(x="Depth (m)", y="Effective Number of Species")+
+  labs(x="Depth (m)", y=expression(exp(Shannon)))+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
@@ -352,7 +367,7 @@ out <- cbind(h1, Abund=nema_total$Abundance,e)
 out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
 ggplot(data=out, aes(x=Abund, y=qD, colour=Habitat, shape=Date))+
   geom_point(size=5)+
-  labs(x="Number of Individual", y="Effective Number of Species")+
+  labs(x="Number of Individual", y=expression(exp(Shannon)))+
   scale_shape_manual(values=c(1, 19))+
   scale_x_log10()+
   scale_color_viridis(discrete = TRUE)+
@@ -368,7 +383,7 @@ ggplot(data=out, aes(x=Zone, y=qD, ymin=qD, ymax=qD+sd, fill=Date))+
   geom_errorbar(position="dodge")+
   geom_bar(stat="identity", position="dodge", colour=gray(0, 0.2))+
   facet_wrap(~Habitat)+
-  labs(x="Depth (m)", y="Effective Number of Species")+
+  labs(x="Depth (m)", y=expression(exp(Shannon)))+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
@@ -381,7 +396,7 @@ ggplot(data=cbind(h2, e),
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
                   position=position_jitter(width=10))+
   stat_smooth(method="lm", fill="gray60")+
-  labs(x="Depth (m)", y="Effective Number of Species")+
+  labs(x="Depth (m)", y=expression(1/Simpson))+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
@@ -400,11 +415,26 @@ out <- cbind(h2, Abund=nema_total$Abundance,e)
 out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
 ggplot(data=out, aes(x=Abund, y=qD, colour=Habitat, shape=Date))+
   geom_point(size=5)+
-  labs(x="Number of Individual", y="Effective Number of Species")+
+  labs(x="Number of Individual", y=expression(1/Simpson))+
   scale_shape_manual(values=c(1, 19))+
   scale_x_log10()+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
+```
+
+```{r, fig.width=6, fig.height=4}
+out <- summaryBy(qD~Cruise+Station+Habitat+Zone, data=cbind(h2, e), FUN=c(mean, sd))
+out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
+names(out)[5:6] <- c("qD", "sd")
+
+ggplot(data=out, aes(x=Zone, y=qD, ymin=qD, ymax=qD+sd, fill=Date))+
+  geom_errorbar(position="dodge")+
+  geom_bar(stat="identity", position="dodge", colour=gray(0, 0.2))+
+  facet_wrap(~Habitat)+
+  labs(x="Depth (m)", y=expression(1/Simpson))+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
 ```
 
 # Correlation bettwen exponential Shannon (q=1) and environmental factor
@@ -413,7 +443,7 @@ p1 <- ggplot(data=cbind(h1, e),
        aes(x=Speed, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Current Velocity (m/s)", y="Effective Species")+
+  labs(x="Modeled Current Velocity (m/s)", y="Species Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -426,7 +456,7 @@ p2 <- ggplot(data=cbind(h1, e),
        aes(x=over20, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Duration of Erosion (hr)", y="Effective Species")+
+  labs(x="Modeled Duration of Erosion (hr)", y="Species Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -439,7 +469,7 @@ p3 <- ggplot(data=cbind(h1, e),
        aes(x=transmissometer, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Light Transmission (%)", y="Effective Species")+
+  labs(x="Light Transmission (%)", y="Species Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -452,7 +482,7 @@ p4 <- ggplot(data=cbind(h1, e),
        aes(x=TOC, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Total Organic Carbon (%)", y="Effective Species")+
+  labs(x="Total Organic Carbon (%)", y="Species Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")

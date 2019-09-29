@@ -88,7 +88,7 @@ ggplot(data=cbind(subset(fd, q==0), e),
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
                   position=position_jitter(width=10))+
   stat_smooth(data=subset(cbind(subset(fd, q==0), e), Habitat=="Slope"), method="lm", fill="gray60", colour=viridis(2)[2])+
-  labs(x="Depth (m)", y="Effective Number of Funtional Group")+
+  labs(x="Depth (m)", y="Functional Diversity (q = 0)")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
@@ -102,6 +102,22 @@ f <- lme(fixed = estimate ~ Habitat*Depth, random = ~1|Cruise, data=cbind(subset
 summary(f)
 ```
 
+
+```{r, fig.width=6, fig.height=4}
+out <- summaryBy(estimate~Cruise+Station+Habitat+Zone, data=cbind(subset(fd, q==0), e), FUN=c(mean, sd))
+out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
+names(out)[5:6] <- c("estimate", "sd")
+
+ggplot(data=out, aes(x=Zone, y=estimate, ymin=estimate, ymax=estimate+sd, fill=Date))+
+  geom_errorbar(position="dodge")+
+  geom_bar(stat="identity", position="dodge", colour=gray(0, 0.2))+
+  facet_wrap(~Habitat)+
+  labs(x="Depth (m)", y="Functional Diversity (q = 0)")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
+```
+
 ## q = 1, tau = RaoQ of effective number of typical functional group
 ```{r, fig.width=6, fig.height=4}
 ggplot(data=cbind(subset(fd, q==1), e), 
@@ -109,7 +125,7 @@ ggplot(data=cbind(subset(fd, q==1), e),
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
                   position=position_jitter(width=10))+
   #stat_smooth(method="lm", fill="gray60")+
-  labs(x="Depth (m)", y="Effective Number of Funtional Group")+
+  labs(x="Depth (m)", y="Functional Diversity (q = 1)")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
@@ -132,7 +148,7 @@ ggplot(data=out, aes(x=Zone, y=estimate, ymin=estimate, ymax=estimate+sd, fill=D
   geom_errorbar(position="dodge")+
   geom_bar(stat="identity", position="dodge", colour=gray(0, 0.2))+
   facet_wrap(~Habitat)+
-  labs(x="Depth (m)", y="Effective Number of Funtional Group")+
+  labs(x="Depth (m)", y="Functional Diversity (q = 1)")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
@@ -145,7 +161,7 @@ ggplot(data=cbind(subset(fd, q==2), e),
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
                   position=position_jitter(width=10))+
   #stat_smooth(method="lm", fill="gray60")+
-  labs(x="Depth (m)", y="Effective Number of Funtional Group")+
+  labs(x="Depth (m)", y="Functional Diversity (q = 2)")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large
@@ -159,13 +175,29 @@ f <- lme(fixed = estimate ~ Habitat*Depth, random = ~1|Cruise, data=cbind(subset
 summary(f)
 ```
 
+
+```{r, fig.width=6, fig.height=4}
+out <- summaryBy(estimate~Cruise+Station+Habitat+Zone, data=cbind(subset(fd, q==2), e), FUN=c(mean, sd))
+out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
+names(out)[5:6] <- c("estimate", "sd")
+
+ggplot(data=out, aes(x=Zone, y=estimate, ymin=estimate, ymax=estimate+sd, fill=Date))+
+  geom_errorbar(position="dodge")+
+  geom_bar(stat="identity", position="dodge", colour=gray(0, 0.2))+
+  facet_wrap(~Habitat)+
+  labs(x="Depth (m)", y="Functional Diversity (q = 2)")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
+```
+
 # Correlation bettwen functional diversity (q=1, tau=RaoQ) and environmental factor
 ```{r, fig.width=4.5, fig.height=4}
 p1 <- ggplot(data=cbind(subset(fd, q==1), e), 
        aes(x=Speed, y=estimate, ymin=LCL, ymax=UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Current Velocity (m/s)", y="Effective Functional Group")+
+  labs(x="Modeled Current Velocity (m/s)", y="Functional Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -178,7 +210,7 @@ p2 <- ggplot(data=cbind(subset(fd, q==1), e),
        aes(x=over20, y=estimate, ymin=LCL, ymax=UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Duration of Erosion (hr)", y="Effective Functional Group")+
+  labs(x="Modeled Duration of Erosion (hr)", y="Functional Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -191,7 +223,7 @@ p3 <- ggplot(data=cbind(subset(fd, q==1), e),
        aes(x=transmissometer, y=estimate, ymin=LCL, ymax=UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Light Transmission (%)", y="Effective Functional Group")+
+  labs(x="Light Transmission (%)", y="Functional Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -205,7 +237,7 @@ p4 <- ggplot(data=cbind(subset(fd, q==1), e),
        aes(x=TOC, y=estimate, ymin=LCL, ymax=UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Total Organic Carbon (%)", y="Effective Functional Group")+
+  labs(x="Total Organic Carbon (%)", y="Functional Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
