@@ -489,7 +489,7 @@ p1 <- ggplot(data=cbind(h1, e),
        aes(x=Speed, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Current Velocity (m/s)", y="Species Diversity")+
+  labs(x="Modeled Current Velocity (m/s)", y="Shannon Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -502,7 +502,7 @@ p2 <- ggplot(data=cbind(h1, e),
        aes(x=over20, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Duration of Erosion (hr)", y="Species Diversity")+
+  labs(x="Modeled Duration of Erosion (hr)", y="Shannon Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -515,7 +515,7 @@ p3 <- ggplot(data=cbind(h1, e),
        aes(x=transmissometer, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Light Transmission (%)", y="Species Diversity")+
+  labs(x="Light Transmission (%)", y="")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -528,7 +528,7 @@ p4 <- ggplot(data=cbind(h1, e),
        aes(x=TOC, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Total Organic Carbon (%)", y="Species Diversity")+
+  labs(x="Total Organic Carbon (%)", y="")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")

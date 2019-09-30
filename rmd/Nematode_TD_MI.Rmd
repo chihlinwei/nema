@@ -140,7 +140,7 @@ p3 <- ggplot(data=cbind(td, e),
        aes(x=transmissometer, y=td))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Light Transmission (%)", y="Trophic Diversity")+
+  labs(x="Light Transmission (%)", y="")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -154,7 +154,7 @@ p4 <- ggplot(data=cbind(td, e),
        aes(x=TOC, y=td))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Total Organic Carbon (%)", y="Trophic Diversity")+
+  labs(x="Total Organic Carbon (%)", y="")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -242,7 +242,7 @@ p3 <- ggplot(data=cbind(mi, e),
        aes(x=transmissometer, y=mi))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Light Transmission (%)", y="Maturity Index")+
+  labs(x="Light Transmission (%)", y="")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -256,7 +256,7 @@ p4 <- ggplot(data=cbind(mi, e),
        aes(x=TOC, y=mi))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Total Organic Carbon (%)", y="Maturity Index")+
+  labs(x="Total Organic Carbon (%)", y="")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")

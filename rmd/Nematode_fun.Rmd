@@ -197,7 +197,7 @@ p1 <- ggplot(data=cbind(subset(fd, q==1), e),
        aes(x=Speed, y=estimate, ymin=LCL, ymax=UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Current Velocity (m/s)", y="Functional Diversity")+
+  labs(x="Modeled Current Velocity (m/s)", y="Functional Diversity (q = 1)")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -210,7 +210,7 @@ p2 <- ggplot(data=cbind(subset(fd, q==1), e),
        aes(x=over20, y=estimate, ymin=LCL, ymax=UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Modeled Duration of Erosion (hr)", y="Functional Diversity")+
+  labs(x="Modeled Duration of Erosion (hr)", y="Functional Diversity (q = 1)")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -223,7 +223,7 @@ p3 <- ggplot(data=cbind(subset(fd, q==1), e),
        aes(x=transmissometer, y=estimate, ymin=LCL, ymax=UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Light Transmission (%)", y="Functional Diversity")+
+  labs(x="Light Transmission (%)", y="")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -237,7 +237,7 @@ p4 <- ggplot(data=cbind(subset(fd, q==1), e),
        aes(x=TOC, y=estimate, ymin=LCL, ymax=UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Total Organic Carbon (%)", y="Functional Diversity")+
+  labs(x="Total Organic Carbon (%)", y="")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")

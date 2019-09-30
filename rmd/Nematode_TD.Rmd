@@ -203,7 +203,7 @@ p3 <- ggplot(data=subset(cbind(h2, e), Sample!="OR1_1126_GC2_1_9_2"),
        aes(x=transmissometer, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Light Transmission (%)", y="Trophic Diversity")+
+  labs(x="Light Transmission (%)", y="")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
@@ -216,7 +216,7 @@ p4 <- ggplot(data=subset(cbind(h2, e), Sample!="OR1_1126_GC2_1_9_2"),
        aes(x=TOC, y=qD, ymin=qD.LCL, ymax=qD.UCL))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
-  labs(x="Total Organic Carbon (%)", y="Trophic Diversity")+
+  labs(x="Total Organic Carbon (%)", y="")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
