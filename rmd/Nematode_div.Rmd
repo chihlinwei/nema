@@ -22,6 +22,7 @@ library(doBy)
 library(cowplot)
 library(knitr)
 library(nlme)
+library(MuMIn)
 ```
 
 # ggplot theme setting
@@ -309,6 +310,25 @@ lapply(hl, FUN=function(x)summary(lm(S.obs~Depth, data=x)))
 # Linear Mixed-Effects Models
 f <- lme(fixed = S.obs ~ Habitat*Depth, random = ~1|Cruise, data=cbind(q0$DataInfo, e), method = "REML", weights=varIdent(form=~1|Cruise))
 summary(f)
+
+# Normalized enivronmental data to mean zero and unit variance
+es <- as.data.frame(scale(e[, c(-1:-9, -11:-13, -35)]))
+
+# General linear Models
+dat <- cbind(q0$DataInfo, es)
+f <- gls(S.obs ~ Speed+CN+Salinity+over20+TOC+transmissometer+Temperature, data=dat)
+summary(f)
+# Model selection
+ms <- dredge(f)
+kable(ms[1:10,])
+# Model averaging
+ma <- model.avg(ms, fit=TRUE)
+kable(summary(ma)$coefmat.full)
+# Best model
+b <- get.models(ms, subset=1)[[1]]
+kable(summary(b)$tTable)
+# Relative importance
+kable(summary(ma)$sw)
 ```
 
 
@@ -358,6 +378,22 @@ lapply(hl, FUN=function(x)summary(lm(qD~Depth, data=x)))
 # Linear Mixed-Effects Models
 f <- lme(fixed = qD ~ Habitat*Depth, random = ~1|Cruise, data=cbind(h0, e), method = "REML", weights=varIdent(form=~1|Cruise))
 summary(f)
+
+# General linear Models
+dat <- cbind(h0, es)
+f <- gls(qD ~ Speed+CN+Salinity+over20+TOC+transmissometer+Temperature, data=dat)
+summary(f)
+# Model selection
+ms <- dredge(f)
+kable(ms[1:10,])
+# Model averaging
+ma <- model.avg(ms, fit=TRUE)
+kable(summary(ma)$coefmat.full)
+# Best model
+b <- get.models(ms, subset=1)[[1]]
+kable(summary(b)$tTable)
+# Relative importance
+kable(summary(ma)$sw)
 ```
 
 ```{r, fig.width=6, fig.height=4}
@@ -406,6 +442,22 @@ lapply(hl, FUN=function(x)summary(lm(qD~Depth, data=x)))
 # Linear Mixed-Effects Models
 f <- lme(fixed = qD ~ Habitat*Depth, random = ~1|Cruise, data=subset(cbind(h1, e), Sample!="OR1_1126_GC2_1_9_3"), method = "REML", weights=varIdent(form=~1|Cruise))
 summary(f)
+
+# General linear Models
+dat <- cbind(h1, es)
+f <- gls(qD ~ Speed+CN+Salinity+over20+TOC+transmissometer+Temperature, data=dat)
+summary(f)
+# Model selection
+ms <- dredge(f)
+kable(ms[1:10,])
+# Model averaging
+ma <- model.avg(ms, fit=TRUE)
+kable(summary(ma)$coefmat.full)
+# Best model
+b <- get.models(ms, subset=1)[[1]]
+kable(summary(b)$tTable)
+# Relative importance
+kable(summary(ma)$sw)
 ```
 
 ```{r, fig.width=6, fig.height=4}
@@ -448,12 +500,28 @@ ggplot(data=cbind(h2, e),
   theme_bw() %+replace% large
 
 # Linear regression
-hl <- splitBy(~Habitat, cbind(h1, e))
+hl <- splitBy(~Habitat, cbind(h2, e))
 lapply(hl, FUN=function(x)summary(lm(qD~Depth, data=x)))
 
 # Linear Mixed-Effects Models
 f <- lme(fixed = qD ~ Habitat*Depth, random = ~1|Cruise, data=cbind(h2, e), method = "REML", weights=varIdent(form=~1|Cruise), na.action = na.omit)
 summary(f)
+
+# General linear Models
+dat <- cbind(h2, es) %>% subset(!is.na(qD))
+f <- gls(qD ~ Speed+CN+Salinity+over20+TOC+transmissometer+Temperature, data=dat)
+summary(f)
+# Model selection
+ms <- dredge(f)
+kable(ms[1:10,])
+# Model averaging
+ma <- model.avg(ms, fit=TRUE)
+kable(summary(ma)$coefmat.full)
+# Best model
+b <- get.models(ms, subset=1)[[1]]
+kable(summary(b)$tTable)
+# Relative importance
+kable(summary(ma)$sw)
 ```
 
 ```{r, fig.width=6, fig.height=4}

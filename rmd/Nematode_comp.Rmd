@@ -455,7 +455,7 @@ cat("Constrained proportion = ", round(su$constr.chi/su$tot.chi*100, 1), "%", "\
 ```{r, fig.width=10, fig.height=4}
 fit <- envfit(md$points, es[, c("Speed", "CN", "Salinity", "over20", "TOC", "transmissometer", "Temperature")])
 lab <- data.frame(fit$vectors$arrows*0.4)
-lab$label <- row.names(lab)
+lab$label <- c("Spd", "CN", "Salin", "Over20", "TOC", "Trans", "Temp")
 
 ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2))+
   geom_point(aes(fill=Habitat, colour=Habitat), pch=21, alpha=0.8, size=5, colour=gray(0, 0.2))+

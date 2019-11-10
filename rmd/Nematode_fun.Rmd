@@ -22,6 +22,7 @@ library(doBy)
 library(cowplot)
 library(knitr)
 library(nlme)
+library(MuMIn)
 ```
 
 # ggplot theme setting
@@ -100,6 +101,25 @@ lapply(hl, FUN=function(x)summary(lm(estimate~Depth, data=x)))
 # Linear Mixed-Effects Models
 f <- lme(fixed = estimate ~ Habitat*Depth, random = ~1|Cruise, data=cbind(subset(fd, q==0), e), method = "REML", weights=varIdent(form=~1|Cruise))
 summary(f)
+
+# Normalized enivronmental data to mean zero and unit variance
+es <- as.data.frame(scale(e[, c(-1:-9, -11:-13, -35)]))
+
+# General linear Models
+dat <- cbind(subset(fd, q==0), es)
+f <- gls(estimate ~ Speed+CN+Salinity+over20+TOC+transmissometer+Temperature, data=dat)
+summary(f)
+# Model selection
+ms <- dredge(f)
+kable(ms[1:10,])
+# Model averaging
+ma <- model.avg(ms, fit=TRUE)
+kable(summary(ma)$coefmat.full)
+# Best model
+b <- get.models(ms, subset=1)[[1]]
+kable(summary(b)$tTable)
+# Relative importance
+kable(summary(ma)$sw)
 ```
 
 
@@ -137,6 +157,22 @@ lapply(hl, FUN=function(x)summary(lm(estimate~Depth, data=x)))
 # Linear Mixed-Effects Models
 f <- lme(fixed = estimate ~ Habitat*Depth, random = ~1|Cruise, data=cbind(subset(fd, q==1), e), method = "REML", weights=varIdent(form=~1|Cruise))
 summary(f)
+
+# General linear Models
+dat <- cbind(subset(fd, q==1), es)
+f <- gls(estimate ~ Speed+CN+Salinity+over20+TOC+transmissometer+Temperature, data=dat)
+summary(f)
+# Model selection
+ms <- dredge(f)
+kable(ms[1:10,])
+# Model averaging
+ma <- model.avg(ms, fit=TRUE)
+kable(summary(ma)$coefmat.full)
+# Best model
+b <- get.models(ms, subset=1)[[1]]
+kable(summary(b)$tTable)
+# Relative importance
+kable(summary(ma)$sw)
 ```
 
 ```{r, fig.width=6, fig.height=4}
@@ -173,6 +209,22 @@ lapply(hl, FUN=function(x)summary(lm(estimate~Depth, data=x)))
 # Linear Mixed-Effects Models
 f <- lme(fixed = estimate ~ Habitat*Depth, random = ~1|Cruise, data=cbind(subset(fd, q==2), e), method = "REML", weights=varIdent(form=~1|Cruise))
 summary(f)
+
+# General linear Models
+dat <- cbind(subset(fd, q==2), es)
+f <- gls(estimate ~ Speed+CN+Salinity+over20+TOC+transmissometer+Temperature, data=dat)
+summary(f)
+# Model selection
+ms <- dredge(f)
+kable(ms[1:10,])
+# Model averaging
+ma <- model.avg(ms, fit=TRUE)
+kable(summary(ma)$coefmat.full)
+# Best model
+b <- get.models(ms, subset=1)[[1]]
+kable(summary(b)$tTable)
+# Relative importance
+kable(summary(ma)$sw)
 ```
 
 
