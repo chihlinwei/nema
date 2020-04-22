@@ -46,37 +46,48 @@ b <- acast(nema_abund, Cruise+Station+Deployment+Tube+Subcore~Genus+Species, fil
 # Multiply the relative abundance by total abundance
 b <- ceiling(decostand(b, "total")*nema_total$Abundance)
 
-# Match environmental data to neamtode sample
-e <- ldply(strsplit(row.names(b), split="_"))
-e <- cbind(with(e, paste(V1, V2, sep="_")), e[,-1:-2])
-names(e) <- c("Cruise", "Station", "Deployment", "Tube", "Subcore")
-id1 <- with(e, paste(Cruise, Station, Deployment))
-id2 <- with(nema_cruise, paste(Cruise, Station, Deployment))
-e <- cbind(e, nema_cruise[match(id1, id2), -3:-5])
-
-# Define depth zone
-depth.bk <- c(200, 400, 600, 800, 1100)
-depth.lab <- c("200-400", "400-600", "600-800", "800-1100")
-e$Zone <- cut(e$Depth, breaks=depth.bk, labels=depth.lab)
-
 # Match the trait data to the species-by-sample matrix
 s <- nema_species[match(colnames(b), with(nema_species, paste(Genus, Species, sep="_"))),]
 ```
 
-# Index of trophic diversity
+# Index of trophic diversity & maturity
 ```{r}
 # Buccal morphology
 tr <- aggregate(t(b), by=list(s$Buccal), FUN=sum)
 buc <- data.frame(t(tr[,-1]))
 names(buc) <- tr$Group.1
 td <- 1/rowSums(decostand(buc, "total")^2)
+
+# Life history
+mi <- colSums(t(decostand(b, "total"))*s$Life.history)
+
+fr <- strsplit(row.names(b), split="_") %>% ldply
+out <- with(fr, paste(V1, V2, sep="_")) %>% cbind(fr[,-1:-2], td, mi)
+names(out) <- c("Cruise", "Station", "Deployment", "Tube", "Subcore", "td", "mi")
+out <- summaryBy(td+mi~Cruise+Station+Deployment, out, FUN=c(mean, sd, length))
+names(out)[-1:-3] <- c("td", "mi", "td.sd", "mi.sd", "td.n", "mi.n") 
 ```
 
+```{r}
+# Match environmental data to neamtode sample
+id1 <- with(out, paste(Cruise, Station, Deployment))
+id2 <- with(nema_cruise, paste(Cruise, Station, Deployment))
+out <- cbind(out, nema_cruise[match(id1, id2), -3:-5])
+
+# Define depth zone
+depth.bk <- c(200, 400, 600, 800, 1100)
+depth.lab <- c("200-400", "400-600", "600-800", "800-1100")
+out$Zone <- cut(out$Depth, breaks=depth.bk, labels=depth.lab)
+```
+
+
+
 ```{r, fig.width=6, fig.height=4}
-ggplot(data=cbind(td, e), 
-       aes(x=Depth, y=td, colour=Habitat))+
+ggplot(data=out, 
+       aes(x=Depth, y=td, ymin=td-td.sd, ymax=td+td.sd, colour=Habitat))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size =5)+
-  stat_smooth(data=subset(cbind(td, e), Habitat=="Slope"), 
+  geom_errorbar()+
+  stat_smooth(data=subset(out, Habitat=="Slope"), 
               method="lm", fill="gray60", colour=viridis(2)[2])+
   labs(x="Depth (m)", y="Index of Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
@@ -84,22 +95,20 @@ ggplot(data=cbind(td, e),
   theme_bw() %+replace% large
 
 # Linear regression
-hl <- splitBy(~Habitat, cbind(td, e))
+hl <- splitBy(~Habitat, out)
 lapply(hl, FUN=function(x)summary(lm(td~Depth, data=x)))
 
 # Linear Mixed-Effects Models
-f <- lme(fixed = td ~ Habitat*Depth, random = ~1|Cruise, data=cbind(td, e), method = "REML", weights=varIdent(form=~1|Cruise))
+f <- lme(fixed = td ~ Habitat*Depth, random = ~1|Cruise, data=out, method = "REML", weights=varIdent(form=~1|Cruise))
 summary(f)
 ```
 
 ```{r, fig.width=6, fig.height=4}
-out <- summaryBy(td~Cruise+Station+Habitat+Zone, data=cbind(td, e), FUN=c(mean, sd))
 out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
-names(out)[5:6] <- c("td", "sd")
 
-ggplot(data=out, aes(x=Zone, y=td, ymin=td, ymax=td+sd, fill=Date))+
-  geom_errorbar(position="dodge")+
-  geom_bar(stat="identity", position="dodge", colour=gray(0, 0.2))+
+ggplot()+
+  geom_errorbar(data=out, aes(x=Zone, y=td, ymin=td, ymax=td+td.sd, fill=Date), position="dodge")+
+  geom_bar(data=out, aes(x=Zone, y=td, fill=Date), stat="identity", position="dodge", colour=gray(0, 0.2))+
   facet_wrap(~Habitat)+
   labs(x="Depth (m)", y="Index of Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
@@ -110,56 +119,60 @@ ggplot(data=out, aes(x=Zone, y=td, ymin=td, ymax=td+sd, fill=Date))+
 
 # Correlation bettwen trophic diversity and environmental factor
 ```{r, fig.width=4.5, fig.height=4}
-p1 <- ggplot(data=cbind(td, e), 
-       aes(x=Speed, y=td))+
+p1 <- ggplot(data=out, 
+       aes(x=Speed, y=td, ymin=td-td.sd, ymax=td+td.sd, colour=Habitat))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_errorbar()+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Modeled Current Velocity (m/s)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
-cor.test(formula=~td+Speed, data=cbind(td, e))
+cor.test(formula=~td+Speed, data=out)
 ```
 
 ```{r, fig.width=4.5, fig.height=4}
-p2 <- ggplot(data=cbind(td, e), 
-       aes(x=over20, y=td))+
+p2 <- ggplot(data=out, 
+       aes(x=over20, y=td, ymin=td-td.sd, ymax=td+td.sd, colour=Habitat))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_errorbar()+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Modeled Duration of Erosion (hr)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
-cor.test(formula=~td+over20, data=cbind(td, e))
+cor.test(formula=~td+over20, data=out)
 ```
 
 ```{r, fig.width=4.5, fig.height=4}
-p3 <- ggplot(data=cbind(td, e), 
-       aes(x=transmissometer, y=td))+
+p3 <- ggplot(data=out, 
+       aes(x=transmissometer, y=td, ymin=td-td.sd, ymax=td+td.sd, colour=Habitat))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_errorbar()+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Light Transmission (%)", y="")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
-cor.test(formula=~td+transmissometer, data=cbind(td, e))
+cor.test(formula=~td+transmissometer, data=out)
 ```
 
 
 ```{r, fig.width=4.5, fig.height=4}
-p4 <- ggplot(data=cbind(td, e), 
-       aes(x=TOC, y=td))+
+p4 <- ggplot(data=out, 
+       aes(x=TOC, y=td, ymin=td-td.sd, ymax=td+td.sd, colour=Habitat))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_errorbar()+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Total Organic Carbon (%)", y="")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
-cor.test(formula=~td+TOC, data=cbind(td, e))
+cor.test(formula=~td+TOC, data=out)
 ```
 
 ```{r, fig.width=10, fig.height=3}
@@ -171,15 +184,13 @@ plot_grid(p2, p3, ncol=2, align = "h", axis="b")
 ```
 
 # Maturity index
-```{r}
-mi <- colSums(t(decostand(b, "total"))*s$Life.history)
-```
 
 ```{r, fig.width=6, fig.height=4}
-ggplot(data=cbind(mi, e), 
-       aes(x=Depth, y=mi, colour=Habitat))+
+ggplot(data=out, 
+       aes(x=Depth, y=mi, ymin=mi-mi.sd, ymax=mi+mi.sd, colour=Habitat))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size =5)+
-  stat_smooth(data=subset(cbind(mi, e), Habitat=="Slope"), 
+  geom_errorbar()+
+  stat_smooth(data=subset(out, Habitat=="Slope"), 
               method="lm", fill="gray60", colour=viridis(2)[2])+
   labs(x="Depth (m)", y="Maturity Index")+
   scale_fill_viridis(discrete = TRUE)+
@@ -187,22 +198,18 @@ ggplot(data=cbind(mi, e),
   theme_bw() %+replace% large
 
 # Linear regression
-hl <- splitBy(~Habitat, cbind(mi, e))
+hl <- splitBy(~Habitat, out)
 lapply(hl, FUN=function(x)summary(lm(mi~Depth, data=x)))
 
 # Linear Mixed-Effects Models
-f <- lme(fixed = mi ~ Habitat*Depth, random = ~1|Cruise, data=cbind(mi, e), method = "REML", weights=varIdent(form=~1|Cruise))
+f <- lme(fixed = mi ~ Habitat*Depth, random = ~1|Cruise, data=out, method = "REML", weights=varIdent(form=~1|Cruise))
 summary(f)
 ```
 
 ```{r, fig.width=6, fig.height=4}
-out <- summaryBy(mi~Cruise+Station+Habitat+Zone, data=cbind(mi, e), FUN=c(mean, sd))
-out$Date <- factor(out$Cruise, labels=c("2015-08", "2015-11"))
-names(out)[5:6] <- c("mi", "sd")
-
-ggplot(data=out, aes(x=Zone, y=mi, ymin=mi, ymax=mi+sd, fill=Date))+
-  geom_errorbar(position="dodge")+
-  geom_bar(stat="identity", position="dodge", colour=gray(0, 0.2))+
+ggplot()+
+  geom_errorbar(data=out, aes(x=Zone, y=mi, ymin=mi, ymax=mi+mi.sd, fill=Date), position="dodge")+
+  geom_bar(data=out, aes(x=Zone, y=mi, fill=Date), stat="identity", position="dodge", colour=gray(0, 0.2))+
   facet_wrap(~Habitat)+
   labs(x="Depth (m)", y="Maturity Index")+
   scale_fill_viridis(discrete = TRUE)+
@@ -212,56 +219,60 @@ ggplot(data=out, aes(x=Zone, y=mi, ymin=mi, ymax=mi+sd, fill=Date))+
 
 # Correlation bettwen functional diversity (q=1, tau=RaoQ) and environmental factor
 ```{r, fig.width=4.5, fig.height=4}
-p1 <- ggplot(data=cbind(mi, e), 
-       aes(x=Speed, y=mi))+
+p1 <- ggplot(data=out, 
+       aes(x=Speed, y=mi, ymin=mi-mi.sd, ymax=mi+mi.sd, colour=Habitat))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_errorbar()+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Modeled Current Velocity (m/s)", y="Maturity Index")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
-cor.test(formula=~mi+Speed, data=cbind(mi, e))
+cor.test(formula=~mi+Speed, data=out)
 ```
 
 ```{r, fig.width=4.5, fig.height=4}
-p2 <- ggplot(data=cbind(mi, e), 
-       aes(x=over20, y=mi))+
+p2 <- ggplot(data=out, 
+       aes(x=over20, y=mi, ymin=mi-mi.sd, ymax=mi+mi.sd, colour=Habitat))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_errorbar()+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Modeled Duration of Erosion (hr)", y="Maturity Index")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
-cor.test(formula=~mi+over20, data=cbind(mi, e))
+cor.test(formula=~mi+over20, data=out)
 ```
 
 ```{r, fig.width=4.5, fig.height=4}
-p3 <- ggplot(data=cbind(mi, e), 
-       aes(x=transmissometer, y=mi))+
+p3 <- ggplot(data=out, 
+       aes(x=transmissometer, y=mi, ymin=mi-mi.sd, ymax=mi+mi.sd, colour=Habitat))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_errorbar()+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Light Transmission (%)", y="")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
-cor.test(formula=~mi+transmissometer, data=cbind(mi, e))
+cor.test(formula=~mi+transmissometer, data=out)
 ```
 
 
 ```{r, fig.width=4.5, fig.height=4}
-p4 <- ggplot(data=cbind(mi, e), 
-       aes(x=TOC, y=mi))+
+p4 <- ggplot(data=out, 
+       aes(x=TOC, y=mi, ymin=mi-mi.sd, ymax=mi+mi.sd, colour=Habitat))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
+  geom_errorbar()+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Total Organic Carbon (%)", y="")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
   theme_bw() %+replace% large %+replace% theme(legend.position="none")
 
-cor.test(formula=~mi+TOC, data=cbind(mi, e))
+cor.test(formula=~mi+TOC, data=out)
 ```
 
 ```{r, fig.width=10, fig.height=3}
@@ -273,7 +284,5 @@ plot_grid(p2, p3, ncol=2, align = "h", axis="b")
 ```
 
 ```{r}
-out <- cbind(e[,1:5], "TD"=td, "MI"=mi)
-row.names(out) <- NULL
-kable(out)
+kable(out[,1:9], align="c")
 ```
