@@ -1,0 +1,301 @@
+---
+title: "Nematode Functional Diversity"
+author: "Wei, C.-L., Liao, J.-X."
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Reguired package
+```{r}
+library(nema)
+library(FD)
+library(ggplot2)
+library(reshape2)
+library(vegan)
+library(plyr)
+library(viridis)
+library(doBy)
+library(cowplot)
+library(knitr)
+library(nlme)
+library(MuMIn)
+```
+
+# ggplot theme setting
+```{r}
+large <- theme(legend.title = element_text(size=15),
+        legend.text = element_text(size=15),
+        axis.title = element_text(size=15),
+        axis.text = element_text(size=15),
+        strip.text = element_text(size=15))
+
+rotate <- theme(axis.text.x = element_text(angle = 30, hjust=0.5))
+
+no_strip <- theme(strip.background = element_rect(colour=NA, fill=NA),
+                  strip.text = element_text(colour=NA))
+```
+
+# Preparing nematode and environmental data
+Relative abundance of nematode species from 100 randomly slected individuals was scaled to the total nematode abundance in each sample.
+```{r}
+# Convert to species-by-sample matrix
+b <- acast(nema_abund, Cruise+Station+Deployment+Tube+Subcore~Genus+Species, fill=0)
+# Multiply the relative abundance by total abundance
+b <- ceiling(decostand(b, "total")*nema_total$Abundance)
+
+# Match the trait data to the species-by-sample matrix
+s <- nema_species[match(colnames(b), with(nema_species, paste(Genus, Species, sep="_"))),]
+
+nema_cruise$Date <- factor(nema_cruise$Cruise, labels=c("2015-08", "2015-11"))
+# Define depth zone
+depth.bk <- c(200, 400, 600, 800, 1100)
+depth.lab <- c("200-400", "400-600", "600-800", "800-1100")
+nema_cruise$Zone <- cut(nema_cruise$Depth, breaks=depth.bk, labels=depth.lab)
+```
+
+# Estimate Functional Hill Numbers
+* Bootstrap confidence interval (1000 iteration)
+```{r, eval=FALSE}
+tr <- s[, c("Buccal", "Tail", "Life.history")]
+row.names(tr) <- colnames(b)
+dis <- gowdis(tr)
+ab <- as.list(as.data.frame(t(b)))
+Q <- raoQ(ab, dis, datatype = "abundance")
+fd <- FunD(ab, dis, tau=Q, q=0:2, boot=1000, datatype = "abundance")
+save(fd, file="../rda/FunHillNumbers.rda")
+```
+
+```{r}
+load("../rda/FunHillNumbers.rda")
+fd <- subset(fd$forq, tau=="dmean")
+
+fr <- lapply(strsplit(as.character(fd$site), split="_"), FUN=function(x)c(paste(x[1], x[2], sep="_"), x[-1:-2])) %>% ldply
+names(fr) <- c("Cruise", "Station", "Deployment", "Tube", "Subcore")
+fd <- cbind(fr, fd[,-7])
+fd <- summaryBy(estimate~q+Cruise+Station+Deployment, data=fd, FUN=c(mean, sd, length))
+names(fd)[-1:-4] <- c("estimate", "sd", "n")
+id1 <- with(fd, paste(Cruise, Station, Deployment))
+id2 <- with(nema_cruise, paste(Cruise, Station, Deployment))
+fd <- cbind(fd, nema_cruise[match(id1, id2), -3:-5])
+```
+
+
+## q = 0, tau = RaoQ of functional richness
+```{r, fig.width=6, fig.height=4}
+ggplot(data=subset(fd, q==0), 
+       aes(x=Depth, y=estimate, ymin=estimate-sd, ymax=estimate+sd, colour=Habitat))+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
+                  position=position_jitter(width=10))+
+  #stat_smooth(method="lm", fill="gray60")+
+  labs(x="Depth (m)", y="Functional Diversity (q = 0)")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large
+
+# Linear regression
+hl <- splitBy(~Habitat, subset(fd, q==0))
+lapply(hl, FUN=function(x)summary(lm(estimate~Depth, data=x)))
+
+# Linear Mixed-Effects Models
+f <- lme(fixed = estimate ~ Habitat*Depth, random = ~1|Cruise, data=subset(fd, q==0), method = "REML", weights=varIdent(form=~1|Cruise))
+summary(f)
+
+# Normalized enivronmental data to mean zero and unit variance
+es <- as.data.frame(scale(fd[, c(-1:-15, -37)]))
+
+# General linear Models
+dat <- cbind(subset(fd, q==0)[, c(1:15, 37)], es)
+f <- gls(estimate ~ Speed+CN+Salinity+over20+TOC+transmissometer+Temperature, data=dat)
+summary(f)
+# Model selection
+ms <- dredge(f)
+kable(ms[1:10,])
+# Model averaging
+ma <- model.avg(ms, fit=TRUE)
+kable(summary(ma)$coefmat.full)
+# Best model
+b <- get.models(ms, subset=1)[[1]]
+kable(summary(b)$tTable)
+# Relative importance
+kable(summary(ma)$sw)
+```
+
+
+```{r, fig.width=6, fig.height=4}
+ggplot()+
+  geom_errorbar(data=subset(fd, q==0), aes(x=Zone, y=estimate, ymin=estimate, ymax=estimate+sd, fill=Date), position="dodge")+
+  geom_bar(data=subset(fd, q==0), aes(x=Zone, y=estimate, fill=Date), stat="identity", position="dodge", colour=gray(0, 0.2))+
+  facet_wrap(~Habitat)+
+  labs(x="Depth (m)", y="Functional Diversity (q = 0)")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
+```
+
+## q = 1, tau = RaoQ of effective number of typical functional group
+```{r, fig.width=6, fig.height=4}
+ggplot(data=subset(fd, q==1), 
+       aes(x=Depth, y=estimate, ymin=estimate-sd, ymax=estimate+sd, colour=Habitat))+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
+                  position=position_jitter(width=10))+
+  #stat_smooth(method="lm", fill="gray60")+
+  labs(x="Depth (m)", y="Functional Diversity (q = 1)")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large
+
+# Linear regression
+hl <- splitBy(~Habitat, subset(fd, q==1))
+lapply(hl, FUN=function(x)summary(lm(estimate~Depth, data=x)))
+
+# Linear Mixed-Effects Models
+f <- lme(fixed = estimate ~ Habitat*Depth, random = ~1|Cruise, data=subset(fd, q==1), method = "REML", weights=varIdent(form=~1|Cruise))
+summary(f)
+
+# General linear Models
+dat <- cbind(subset(fd, q==1)[, c(1:15, 37)], es)
+f <- gls(estimate ~ Speed+CN+Salinity+over20+TOC+transmissometer+Temperature, data=dat)
+summary(f)
+# Model selection
+ms <- dredge(f)
+kable(ms[1:10,])
+# Model averaging
+ma <- model.avg(ms, fit=TRUE)
+kable(summary(ma)$coefmat.full)
+# Best model
+b <- get.models(ms, subset=1)[[1]]
+kable(summary(b)$tTable)
+# Relative importance
+kable(summary(ma)$sw)
+```
+
+```{r, fig.width=6, fig.height=4}
+ggplot()+
+  geom_errorbar(data=subset(fd, q==1), aes(x=Zone, y=estimate, ymin=estimate, ymax=estimate+sd, fill=Date), position="dodge")+
+  geom_bar(data=subset(fd, q==1), aes(x=Zone, y=estimate, fill=Date), stat="identity", position="dodge", colour=gray(0, 0.2))+
+  facet_wrap(~Habitat)+
+  labs(x="Depth (m)", y="Functional Diversity (q = 1)")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
+```
+
+## q = 2, tau = RaoQ of effective number of dominant functional group
+```{r, fig.width=6, fig.height=4}
+ggplot(data=subset(fd, q==2), 
+       aes(x=Depth, y=estimate, ymin=estimate-sd, ymax=estimate+sd, colour=Habitat))+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten = 10, 
+                  position=position_jitter(width=10))+
+  #stat_smooth(method="lm", fill="gray60")+
+  labs(x="Depth (m)", y="Functional Diversity (q = 2)")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large
+
+# Linear regression
+hl <- splitBy(~Habitat, subset(fd, q==2))
+lapply(hl, FUN=function(x)summary(lm(estimate~Depth, data=x)))
+
+# Linear Mixed-Effects Models
+f <- lme(fixed = estimate ~ Habitat*Depth, random = ~1|Cruise, data=subset(fd, q==2), method = "REML", weights=varIdent(form=~1|Cruise))
+summary(f)
+
+# General linear Models
+dat <- cbind(subset(fd, q==2)[, c(1:15, 37)], es)
+f <- gls(estimate ~ Speed+CN+Salinity+over20+TOC+transmissometer+Temperature, data=dat)
+summary(f)
+# Model selection
+ms <- dredge(f)
+kable(ms[1:10,])
+# Model averaging
+ma <- model.avg(ms, fit=TRUE)
+kable(summary(ma)$coefmat.full)
+# Best model
+b <- get.models(ms, subset=1)[[1]]
+kable(summary(b)$tTable)
+# Relative importance
+kable(summary(ma)$sw)
+```
+
+
+```{r, fig.width=6, fig.height=4}
+ggplot()+
+  geom_errorbar(data=subset(fd, q==2), aes(x=Zone, y=estimate, ymin=estimate, ymax=estimate+sd, fill=Date), position="dodge")+
+  geom_bar(data=subset(fd, q==2), aes(x=Zone, y=estimate, fill=Date), stat="identity", position="dodge", colour=gray(0, 0.2))+
+  facet_wrap(~Habitat)+
+  labs(x="Depth (m)", y="Functional Diversity (q = 2)")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
+```
+
+# Correlation bettwen functional diversity (q=1, tau=RaoQ) and environmental factor
+```{r, fig.width=4.5, fig.height=4}
+p1 <- ggplot(data=subset(fd, q==1), 
+       aes(x=Speed, y=estimate, ymin=estimate-sd, ymax=estimate+sd))+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
+  stat_smooth(method="lm", fill="gray60", colour="gray50")+
+  labs(x="Modeled Current Velocity (m/s)", y="Functional Diversity (q = 1)")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large %+replace% theme(legend.position="none")
+
+cor.test(formula=~estimate+Speed, data=subset(fd, q==1))
+```
+
+```{r, fig.width=4.5, fig.height=4}
+p2 <- ggplot(data=subset(fd, q==1), 
+       aes(x=over20, y=estimate, ymin=estimate-sd, ymax=estimate+sd))+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
+  stat_smooth(method="lm", fill="gray60", colour="gray50")+
+  labs(x="Modeled Duration of Erosion (hr)", y="Functional Diversity (q = 1)")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large %+replace% theme(legend.position="none")
+
+cor.test(formula=~estimate+over20, data=subset(fd, q==1))
+```
+
+```{r, fig.width=4.5, fig.height=4}
+p3 <- ggplot(data=subset(fd, q==1), 
+       aes(x=transmissometer, y=estimate, ymin=estimate-sd, ymax=estimate+sd))+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
+  stat_smooth(method="lm", fill="gray60", colour="gray50")+
+  labs(x="Light Transmission (%)", y="")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large %+replace% theme(legend.position="none")
+
+cor.test(formula=~estimate+transmissometer, data=subset(fd, q==1))
+```
+
+
+```{r, fig.width=4.5, fig.height=4}
+p4 <- ggplot(data=subset(fd, q==1), 
+       aes(x=TOC, y=estimate, ymin=estimate-sd, ymax=estimate+sd))+
+  geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
+  stat_smooth(method="lm", fill="gray60", colour="gray50")+
+  labs(x="Total Organic Carbon (%)", y="")+
+  scale_fill_viridis(discrete = TRUE)+
+  scale_color_viridis(discrete = TRUE)+
+  theme_bw() %+replace% large %+replace% theme(legend.position="none")
+
+cor.test(formula=~estimate+TOC, data=subset(fd, q==1))
+```
+
+
+```{r, fig.width=10, fig.height=3}
+plot_grid(p1, p4, ncol=2, align = "h", axis="b")
+```
+
+```{r, fig.width=10, fig.height=3}
+plot_grid(p2, p3, ncol=2, align = "h", axis="b")
+```
+
+```{r}
+kable(fd[, c(1:7)])
+```
