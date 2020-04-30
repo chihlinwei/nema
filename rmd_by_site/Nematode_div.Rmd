@@ -309,7 +309,8 @@ ggplot(data=div,
        aes(x=Depth, y=S.obs, ymin=S.obs-S.obs.sd, ymax=S.obs+S.obs.sd, colour=Habitat))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
   geom_errorbar()+
-  stat_smooth(method="lm", fill="gray60")+
+  stat_smooth(data=subset(div, Habitat=="Slope"), 
+       aes(x=Depth, y=S.obs, colour=Habitat), method="lm", fill="gray60")+
   labs(x="Depth (m)", y="Number of Species")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+

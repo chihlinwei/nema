@@ -113,6 +113,7 @@ ggplot()+
   labs(x="Depth (m)", y="Index of Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
+  coord_cartesian(ylim=c(1, 4))+
   theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
 ```
 
@@ -190,8 +191,8 @@ ggplot(data=out,
        aes(x=Depth, y=mi, ymin=mi-mi.sd, ymax=mi+mi.sd, colour=Habitat))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size =5)+
   geom_errorbar()+
-  stat_smooth(data=subset(out, Habitat=="Slope"), 
-              method="lm", fill="gray60", colour=viridis(2)[2])+
+  #stat_smooth(data=subset(out, Habitat=="Slope"), 
+  #            method="lm", fill="gray60", colour=viridis(2)[2])+
   labs(x="Depth (m)", y="Maturity Index")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
@@ -214,6 +215,7 @@ ggplot()+
   labs(x="Depth (m)", y="Maturity Index")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
+  coord_cartesian(ylim=c(2, 3.1))+
   theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
 ```
 
