@@ -96,6 +96,7 @@ stress <- paste("Stress = ", deparse(round(md$stress,2)))
 # Merge MDS to environmental data frame
 ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2, fill=Habitat, colour=Habitat))+
   geom_point(pch=21, alpha=0.8, size=5, colour=gray(0, 0.2))+
+  geom_point(data=cbind(md$points, e) %>% subset(Cruise=="OR1_1114"), pch=21, size=2, fill="white", colour="black")+
   stat_ellipse(type="norm")+
   annotate("text", x=0.1, y=-0.4, label=stress, size=5) +
   scale_fill_viridis(discrete = TRUE)+
@@ -138,6 +139,7 @@ lab <- rbind(cbind(can, Habitat="Canyon"), cbind(slo, Habitat="Slope"))
 
 ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2, fill=Habitat, colour=Habitat))+
   geom_point(pch=21, alpha=0.8, size=5, colour=gray(0, 0.2))+
+  geom_point(data=cbind(md$points, e) %>% subset(Cruise=="OR1_1114"), pch=21, size=2, fill="white", colour="black")+
   stat_ellipse(type="norm")+
   annotate("text", x=-0.45, y=-0.4, label=stress, size=5)+
   geom_label_repel(data=lab, aes(x=MDS1, y=MDS2, label=label), colour="black", 
@@ -166,6 +168,7 @@ lab <- rbind(cbind(can, Habitat="Canyon"), cbind(slo, Habitat="Slope"))
 
 ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2, fill=Habitat, colour=Habitat))+
   geom_point(pch=21, alpha=0.8, size=5, colour=gray(0, 0.2))+
+  geom_point(data=cbind(md$points, e) %>% subset(Cruise=="OR1_1114"), pch=21, size=2, fill="white", colour="black")+
   stat_ellipse(type="norm")+
   annotate("text", x=-0.45, y=-0.4, label=stress, size=5)+
   geom_label_repel(data=lab, aes(x=MDS1, y=MDS2, label=label), colour="black", 
@@ -194,6 +197,7 @@ lab <- rbind(cbind(can, Habitat="Canyon"), cbind(slo, Habitat="Slope"))
 
 ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2, fill=Habitat, colour=Habitat))+
   geom_point(pch=21, alpha=0.8, size=5, colour=gray(0, 0.2))+
+  geom_point(data=cbind(md$points, e) %>% subset(Cruise=="OR1_1114"), pch=21, size=2, fill="white", colour="black")+
   stat_ellipse(type="norm")+
   annotate("text", x=-0.45, y=-0.4, label=stress, size=5)+
   geom_label_repel(data=lab, aes(x=MDS1, y=MDS2, label=label), colour="black", 
@@ -214,6 +218,7 @@ lab1$descrip <- c("selective deposit feeder", "non-selective deposit feeder", "e
 
 ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2, fill=Habitat, colour=Habitat))+
   geom_point(pch=21, alpha=0.8, size=5, colour=gray(0, 0.2))+
+  geom_point(data=cbind(md$points, e) %>% subset(Cruise=="OR1_1114"), pch=21, size=2, fill="white", colour="black")+
   stat_ellipse(type="norm")+
   annotate("text", x=-0.45, y=-0.4, label=stress, size=5)+
   geom_label_repel(data=subset(lab1, label!=3), aes(label=label), fill=viridis(3, 0.6)[2],
@@ -252,6 +257,7 @@ lab2$descrip <- c("clavate", "conical", "elongated/filiform", "short/round")
 
 ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2, fill=Habitat, colour=Habitat))+
   geom_point(pch=21, alpha=0.8, size=5, colour=gray(0, 0.2))+
+  geom_point(data=cbind(md$points, e) %>% subset(Cruise=="OR1_1114"), pch=21, size=2, fill="white", colour="black")+
   stat_ellipse(type="norm")+
   annotate("text", x=-0.45, y=-0.4, label=stress, size=5)+
   geom_label_repel(data=lab2, aes(label=label), fill=viridis(3, 0.6)[2],
@@ -289,6 +295,7 @@ lab3$descrip <- c("extreme coloniser", "coloniser", "intermediate", "persister")
 
 ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2, fill=Habitat, colour=Habitat))+
   geom_point(pch=21, alpha=0.8, size=5, colour=gray(0, 0.2))+
+  geom_point(data=cbind(md$points, e) %>% subset(Cruise=="OR1_1114"), pch=21, size=2, fill="white", colour="black")+
   stat_ellipse(type="norm")+
   annotate("text", x=-0.45, y=-0.4, label=stress, size=5)+
   geom_label_repel(data=lab3, aes(label=label), fill=viridis(3, 0.6)[2],
@@ -321,6 +328,7 @@ lab <- rbind(cbind(lab1, Trait="Buccal\nMorph"), cbind(lab2, Trait="Tail\nShape"
 
 ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2))+
   geom_point(aes(shape=Habitat), alpha=0.8, size=5, colour=gray(0, 0.2))+
+  geom_point(data=cbind(md$points, e) %>% subset(Cruise=="OR1_1114"), pch=21, size=2, fill="white", colour="black")+
   stat_ellipse(aes(linetype=Habitat), type="norm")+
   annotate("text", x=-0.45, y=-0.4, label=stress, size=5)+
   geom_label_repel(data=subset(lab, descrip!="mouthless"), aes(label=label, colour=Trait), fill=gray(1, 0.6), fontface = "bold",
@@ -409,6 +417,7 @@ fit <- cbind(fit, label=c("Salin", "CN", "Trans", "Sil", "Over20", "San", "Spd",
 
 ggplot(data=cbind(as.data.frame(db$CCA$u), e), aes(x=dbRDA1, y=dbRDA2))+
   geom_point(size=10, pch=21, colour=gray(0, 0.2), alpha=0.8, aes(fill=Habitat))+
+  geom_point(data=cbind(as.data.frame(db$CCA$u), e) %>% subset(Cruise=="OR1_1114"), pch=21, size=4, fill="white", colour="black")+
   #stat_ellipse(type="norm", aes(colour=Habitat))+
   geom_segment(data=fit, aes(x=0, y=0, xend=dbRDA1, yend=dbRDA2), size=1,
                arrow = arrow(length = unit(0.2,"cm")), colour=viridis(3, 0.6)[2])+
@@ -437,6 +446,7 @@ fit <- cbind(fit, label=c("Spd", "CN", "Salin", "Over20", "TOC", "Trans", "Temp"
 
 ggplot(data=cbind(as.data.frame(db$CCA$u), e), aes(x=dbRDA1, y=dbRDA2))+
   geom_point(size=10, pch=21, colour=gray(0, 0.2), alpha=0.8, aes(fill=Habitat))+
+  geom_point(data=cbind(as.data.frame(db$CCA$u), e) %>% subset(Cruise=="OR1_1114"), pch=21, size=2, fill="white", colour="black")+
   #stat_ellipse(type="norm", aes(colour=Habitat))+
   geom_segment(data=fit, aes(x=0, y=0, xend=dbRDA1, yend=dbRDA2), size=1,
                arrow = arrow(length = unit(0.2,"cm")), colour=viridis(3, 0.6)[2])+
@@ -462,6 +472,7 @@ lab$label <- c("Spd", "CN", "Salin", "Over20", "TOC", "Trans", "Temp")
 
 ggplot(data=cbind(md$points, e), aes(x=MDS1, y=MDS2))+
   geom_point(aes(fill=Habitat, colour=Habitat), pch=21, alpha=0.8, size=5, colour=gray(0, 0.2))+
+  geom_point(data=cbind(md$points, e) %>% subset(Cruise=="OR1_1114"), pch=21, size=2, fill="white", colour="black")+
   stat_ellipse(aes(fill=Habitat, colour=Habitat), type="norm")+
   annotate("text", x=-0.45, y=-0.4, label=stress, size=5)+
   geom_segment(data=lab, aes(x=0, y=0, xend=MDS1, yend=MDS2), size=1, arrow = arrow(length = unit(0.2,"cm")), colour=viridis(3, 0.6)[2])+
