@@ -86,6 +86,7 @@ lapply(hl, FUN=function(x)summary(lm(log10(Abund)~Depth, data=x)))
 f <- lme(fixed = log10(Abund) ~ Habitat*Depth, random = ~1|Cruise, data=abu, method = "REML", weights=varIdent(form=~1|Cruise))
 summary(f)
 
+# Function to plot dianotics plot
 dianostic_plot <- 
   function(f, y){
     # standardized residuals versus fitted values
@@ -129,12 +130,18 @@ dianostic_plot(f, y = "log10(Abund)")
 
 
 # Adding time into linear model
-f <- gls(log10(Abund) ~ Habitat+Depth+Date+Habitat:Depth+Habitat:Date, data=abu, method = "REML")
+f <- gls(log10(Abund) ~ Habitat+Depth+Date+Habitat:Depth+Habitat:Date+Depth:Date, data=abu, method = "REML")
 summary(f)
 dianostic_plot(f, y = "log10(Abund)")
+
+# Pairwise tests on time in canyon
+f <- gls(log10(Abund) ~ Depth+Date+Depth:Date, data=subset(abu, Habitat=="Canyon"), method = "REML")
+summary(f)
+
+# Pairwise tests on time on slope
+f <- gls(log10(Abund) ~ Depth+Date+Depth:Date, data=subset(abu, Habitat=="Slope"), method = "REML")
+summary(f)
 ```
-
-
 
 
 ```{r, fig.width=6, fig.height=4}
@@ -380,7 +387,7 @@ summary(f)
 dianostic_plot(f, y = "S.obs")
 
 # Adding time into linear model
-f <- gls(S.obs ~ Habitat+Depth+Date+Habitat:Depth+Habitat:Date, data=div, method = "REML")
+f <- gls(S.obs ~ Habitat+Depth+Date+Habitat:Depth+Habitat:Date++Depth:Date, data=div, method = "REML")
 summary(f)
 dianostic_plot(f, y = "S.obs")
 
@@ -456,7 +463,7 @@ summary(f)
 dianostic_plot(f, y = "d0")
 
 # Adding time into linear model
-f <- gls(d0 ~ Habitat+Depth+Date+Habitat:Depth+Habitat:Date, data=div, method = "REML")
+f <- gls(d0 ~ Habitat+Depth+Date+Habitat:Depth+Habitat:Date++Depth:Date, data=div, method = "REML")
 summary(f)
 dianostic_plot(f, y = "d0")
 
@@ -530,7 +537,7 @@ summary(f)
 dianostic_plot(f, y = "d1")
 
 # Adding time into linear model
-f <- gls(d1 ~ Habitat+Depth+Date+Habitat:Depth+Habitat:Date, data=div, method = "REML")
+f <- gls(d1 ~ Habitat+Depth+Date+Habitat:Depth+Habitat:Date++Depth:Date, data=div, method = "REML")
 summary(f)
 dianostic_plot(f, y = "d1")
 
@@ -606,7 +613,7 @@ summary(f)
 dianostic_plot(f, y = "d2")
 
 # Adding time into linear model
-f <- gls(d2 ~ Habitat+Depth+Date+Habitat:Depth+Habitat:Date, data=div, method = "REML", na.action = na.omit)
+f <- gls(d2 ~ Habitat+Depth+Date+Habitat:Depth+Habitat:Date++Depth:Date, data=div, method = "REML", na.action = na.omit)
 summary(f)
 dianostic_plot(f, y = "d2")
 
