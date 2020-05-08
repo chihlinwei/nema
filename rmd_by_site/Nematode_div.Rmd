@@ -135,12 +135,12 @@ summary(f)
 dianostic_plot(f, y = "log10(Abund)")
 
 # Pairwise tests on time in canyon
-f <- gls(log10(Abund) ~ Depth+Date+Depth:Date, data=subset(abu, Habitat=="Canyon"), method = "REML")
-summary(f)
+fp <- gls(log10(Abund) ~ Depth+Date+Depth:Date, data=subset(abu, Habitat=="Canyon"), method = "REML")
+summary(fp)
 
 # Pairwise tests on time on slope
-f <- gls(log10(Abund) ~ Depth+Date+Depth:Date, data=subset(abu, Habitat=="Slope"), method = "REML")
-summary(f)
+fp <- gls(log10(Abund) ~ Depth+Date+Depth:Date, data=subset(abu, Habitat=="Slope"), method = "REML")
+summary(fp)
 ```
 
 
@@ -390,6 +390,12 @@ dianostic_plot(f, y = "S.obs")
 f <- gls(S.obs ~ Habitat+Depth+Date+Habitat:Depth+Habitat:Date++Depth:Date, data=div, method = "REML")
 summary(f)
 dianostic_plot(f, y = "S.obs")
+# Pairwise tests on time in canyon
+fp <- gls(S.obs ~ Depth+Date+Depth:Date, data=subset(div, Habitat=="Canyon"), method = "REML")
+summary(fp)
+# Pairwise tests on time on slope
+fp <- gls(S.obs ~ Depth+Date+Depth:Date, data=subset(div, Habitat=="Slope"), method = "REML")
+summary(fp)
 
 # Normalized enivronmental data to mean zero and unit variance
 es <- as.data.frame(scale(div[, c(-1:-23, -45)]))
@@ -466,6 +472,12 @@ dianostic_plot(f, y = "d0")
 f <- gls(d0 ~ Habitat+Depth+Date+Habitat:Depth+Habitat:Date++Depth:Date, data=div, method = "REML")
 summary(f)
 dianostic_plot(f, y = "d0")
+# Pairwise tests on time in canyon
+fp <- gls(d0 ~ Depth+Date+Depth:Date, data=subset(div, Habitat=="Canyon"), method = "REML")
+summary(fp)
+# Pairwise tests on time on slope
+fp <- gls(d0 ~ Depth+Date+Depth:Date, data=subset(div, Habitat=="Slope"), method = "REML")
+summary(fp)
 
 # Normalized enivronmental data to mean zero and unit variance
 es <- as.data.frame(scale(div[, c(-1:-23, -45)]))
@@ -540,6 +552,12 @@ dianostic_plot(f, y = "d1")
 f <- gls(d1 ~ Habitat+Depth+Date+Habitat:Depth+Habitat:Date++Depth:Date, data=div, method = "REML")
 summary(f)
 dianostic_plot(f, y = "d1")
+# Pairwise tests on time in canyon
+fp <- gls(d1 ~ Depth+Date+Depth:Date, data=subset(div, Habitat=="Canyon"), method = "REML")
+summary(fp)
+# Pairwise tests on time on slope
+fp <- gls(d1 ~ Depth+Date+Depth:Date, data=subset(div, Habitat=="Slope"), method = "REML")
+summary(fp)
 
 # Normalized enivronmental data to mean zero and unit variance
 es <- as.data.frame(scale(div[, c(-1:-23, -45)]))
@@ -616,6 +634,12 @@ dianostic_plot(f, y = "d2")
 f <- gls(d2 ~ Habitat+Depth+Date+Habitat:Depth+Habitat:Date++Depth:Date, data=div, method = "REML", na.action = na.omit)
 summary(f)
 dianostic_plot(f, y = "d2")
+# Pairwise tests on time in canyon
+fp <- gls(d2 ~ Depth+Date+Depth:Date, data=subset(div, Habitat=="Canyon"), method = "REML", na.action = na.omit)
+summary(fp)
+# Pairwise tests on time on slope
+fp <- gls(d2 ~ Depth+Date+Depth:Date, data=subset(div, Habitat=="Slope"), method = "REML", na.action = na.omit)
+summary(fp)
 
 # Normalized enivronmental data to mean zero and unit variance
 es <- as.data.frame(scale(div[, c(-1:-23, -45)]))
