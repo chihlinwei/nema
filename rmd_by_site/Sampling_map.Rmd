@@ -84,9 +84,10 @@ library(ggplot2)
 library(viridis)
 env <- nema_cruise[, c("Habitat", "Cruise", "Station", "Depth", "Speed", "over20", "Temperature", "Salinity", "Density", "Oxygen", "fluorometer", "transmissometer", "Clay", "Silt", "Sand", "CN",  "TOC", "TN", "Porosity")]
 
-names(env)[5:19] <- c("Spd", "O20", "Tem", "Sal", "Den", "Oxy", "Flu", "Tra", "Cla", "Sil", "San", "CN", "TOC", "TN", "Por")
+names(env)[5:19] <- c("Speed", "Over20", "Temperature", "Salin", "Density", "Oxygen", "Fluoro", "Trans", "Clay", "Silt", "Sand", "CN", "TOC", "TN", "Porisity")
 
-env2 <- melt(env, id.vars=c("Habitat", "Cruise", "Station", "Depth"), measure.vars=c("Spd", "O20", "Tem", "Sal", "Den", "Oxy", "Flu", "Tra", "Cla", "Sil", "San", "CN", "TOC", "TN", "Por"))
+env2 <- melt(env, id.vars=c("Habitat", "Cruise", "Station", "Depth"), measure.vars=c("Speed", "Over20", "Temperature", "Salin", "Density", "Oxygen", "Fluoro", "Trans", "Clay", "Silt", "Sand", "CN", "TOC", "TN", "Porisity"))
+
 
 #env3 <- summaryBy(Depth+value~Habitat+Station+variable, data=env2, FUN=c(mean, sd))
 
