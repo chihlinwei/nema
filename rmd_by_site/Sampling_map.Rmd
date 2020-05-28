@@ -32,7 +32,7 @@ tbspplot <-
   pal <- tb.colors(x)
   p1 <- spplot(x, col.regions=alpha(pal$col, 0.6), at=pal$breaks,
                colorkey=list(space="top", labels=list(cex=1)),
-               scales=list(draw = TRUE, cex=1)
+               scales=list(draw = TRUE, cex=0.9)
                ,...)
 p1+as.layer(p2, under=T)
 }
@@ -41,7 +41,7 @@ extra <- function(...){
          panel.levelplot.raster(...)
          sp.polygons(b)
 }
-tbspplot(r, panel=extra, )
+tbspplot(r, panel=extra)
 ```
 
 
@@ -65,7 +65,7 @@ isobath<- rasterToContour(r, levels=seq(-1200, 0, by=200))
 extra <- function(...){
          panel.levelplot.raster(...)
          sp.lines(isobath, col="gray30")
-         sp.points(loc, cex=1.5, pch=19, col="black")
+         sp.points(loc, cex=1, pch=19, col="black")
          sp.pointLabel(loc, labels=loc$Station, allowSmallOverlap=FALSE)
          SpatialPolygonsRescale(layout.scale.bar(), offset=c(120.28, 22.46), scale = 10/(111.321*cos(22.46*pi/180)), fill = c("white","black"), col = "black")
          sp.text(loc = c(120.28, 22.475), "0")
@@ -96,7 +96,7 @@ large <- theme(legend.title = element_text(size=20),
         axis.title = element_text(size=20),
         axis.text = element_text(size=20),
         axis.text.x = element_text(angle = 60),
-        strip.text= element_text(size=20))
+        strip.text= element_text(size=20, colour="white"))
 
 env2$Date <- factor(env2$Cruise, labels = c("2015-08", "2015-11"))
 
@@ -110,6 +110,6 @@ ggplot(data=env2, aes(x=Depth, y=value, shape=Habitat, linetype=Habitat, colour=
   scale_color_viridis(discrete = TRUE)+
   labs(x="Depth (m)", y="")+
   facet_wrap(~variable, scales="free_y", ncol=3)+
-  theme_bw()%+replace% large
+  theme_dark()%+replace% large
 ```
 

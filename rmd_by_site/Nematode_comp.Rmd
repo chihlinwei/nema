@@ -129,9 +129,9 @@ round(out$Slope$summary[1:10, ], 4)
 
 # Top 5 most contributed species
 can <- data.frame(wascores(md$points, b[, row.names(out$Canyon$summary)[1:5]]), "contr"=out$Canyon$summary[1:5, "contr"])
-can$label <- paste("italic(", gsub("_", "~", row.names(can)), ")", sep="")
+can$label <- paste("italic(", gsub("_", ")~", row.names(can)), sep="")
 slo <- data.frame(wascores(md$points, b[, row.names(out$Slope$summary)[1:5]]), "contr"=out$Slope$summary[1:5, "contr"])
-slo$label <- paste("italic(", gsub("_", "~", row.names(slo)), ")", sep="")
+slo$label <- paste("italic(", gsub("_", ")~", row.names(slo)), sep="")
 
 lab <- rbind(cbind(can, Habitat="Canyon"), cbind(slo, Habitat="Slope"))
 
@@ -158,9 +158,9 @@ ceiling(slo[1:10])
 
 # Top 5 most abundant species
 can <- data.frame(wascores(md$points, b[, names(can)[1:5]]), Abundance=can[1:5])
-can$label <- paste("italic(", gsub("_", "~", row.names(can)), ")", sep="")
+can$label <- paste("italic(", gsub("_", ")~", row.names(can)), sep="")
 slo <- data.frame(wascores(md$points, b[, names(slo)[1:5]]), Abundance=slo[1:5])
-slo$label <- paste("italic(", gsub("_", "~", row.names(slo)), ")", sep="")
+slo$label <- paste("italic(", gsub("_", ")~", row.names(slo)), sep="")
 
 lab <- rbind(cbind(can, Habitat="Canyon"), cbind(slo, Habitat="Slope"))
 
@@ -187,9 +187,9 @@ slo[1:10]
 
 # Top 5 most frequently occurred species
 can <- data.frame(wascores(md$points, b[, names(can)[1:5]]), Abundance=can[1:5])
-can$label <- paste("italic(", gsub("_", "~", row.names(can)), ")", sep="")
+can$label <- paste("italic(", gsub("_", ")~", row.names(can)), sep="")
 slo <- data.frame(wascores(md$points, b[, names(slo)[1:5]]), Abundance=slo[1:5])
-slo$label <- paste("italic(", gsub("_", "~", row.names(slo)), ")", sep="")
+slo$label <- paste("italic(", gsub("_", ")~", row.names(slo)), sep="")
 
 lab <- rbind(cbind(can, Habitat="Canyon"), cbind(slo, Habitat="Slope"))
 

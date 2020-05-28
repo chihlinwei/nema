@@ -706,7 +706,7 @@ cor.test(formula=~d1+Speed, data=div)
 
 ```{r, fig.width=4.5, fig.height=4}
 p2 <- ggplot(data=div, 
-       aes(x=over20, y=d1, ymin=d1.sd, ymax=d1.sd))+
+       aes(x=over20, y=d1, ymin=d1-d1.sd, ymax=d1+d1.sd))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Modeled Duration of Erosion (hr)", y="Shannon Diversity")+
@@ -719,7 +719,7 @@ cor.test(formula=~d1+over20, data=div)
 
 ```{r, fig.width=4.5, fig.height=4}
 p3 <- ggplot(data=div, 
-       aes(x=transmissometer, y=d1, ymin=d1.sd, ymax=d1.sd))+
+       aes(x=transmissometer, y=d1, ymin=d1-d1.sd, ymax=d1+d1.sd))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Light Transmission (%)", y="")+
@@ -732,7 +732,7 @@ cor.test(formula=~d1+transmissometer, data=div)
 
 ```{r, fig.width=4.5, fig.height=4}
 p4 <- ggplot(data=div, 
-       aes(x=TOC, y=d1, ymin=d1.sd, ymax=d1.sd))+
+       aes(x=TOC, y=d1, ymin=d1-d1.sd, ymax=d1+d1.sd))+
   geom_pointrange(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), fatten=10)+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Total Organic Carbon (%)", y="")+
