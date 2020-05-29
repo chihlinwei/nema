@@ -172,8 +172,8 @@ ggplot()+
 ```{r, fig.width=4.5, fig.height=4}
 p1 <- ggplot(data=out, 
        aes(x=Speed, y=td, ymin=td-td.sd, ymax=td+td.sd, colour=Habitat))+
+  geom_errorbar(colour=gray(0, 0.2))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
-  geom_errorbar()+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Modeled Current Velocity (m/s)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
@@ -186,8 +186,8 @@ cor.test(formula=~td+Speed, data=out)
 ```{r, fig.width=4.5, fig.height=4}
 p2 <- ggplot(data=out, 
        aes(x=over20, y=td, ymin=td-td.sd, ymax=td+td.sd, colour=Habitat))+
+  geom_errorbar(colour=gray(0, 0.2))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
-  geom_errorbar()+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Modeled Duration of Erosion (hr)", y="Trophic Diversity")+
   scale_fill_viridis(discrete = TRUE)+
@@ -200,8 +200,8 @@ cor.test(formula=~td+over20, data=out)
 ```{r, fig.width=4.5, fig.height=4}
 p3 <- ggplot(data=out, 
        aes(x=transmissometer, y=td, ymin=td-td.sd, ymax=td+td.sd, colour=Habitat))+
+  geom_errorbar(colour=gray(0, 0.2))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
-  geom_errorbar()+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Light Transmission (%)", y="")+
   scale_fill_viridis(discrete = TRUE)+
@@ -215,8 +215,8 @@ cor.test(formula=~td+transmissometer, data=out)
 ```{r, fig.width=4.5, fig.height=4}
 p4 <- ggplot(data=out, 
        aes(x=TOC, y=td, ymin=td-td.sd, ymax=td+td.sd, colour=Habitat))+
+  geom_errorbar(colour=gray(0, 0.2))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
-  geom_errorbar()+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Total Organic Carbon (%)", y="")+
   scale_fill_viridis(discrete = TRUE)+
@@ -282,8 +282,8 @@ ggplot()+
 ```{r, fig.width=4.5, fig.height=4}
 p1 <- ggplot(data=out, 
        aes(x=Speed, y=mi, ymin=mi-mi.sd, ymax=mi+mi.sd, colour=Habitat))+
+  geom_errorbar(colour=gray(0, 0.2))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
-  geom_errorbar()+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Modeled Current Velocity (m/s)", y="Maturity Index")+
   scale_fill_viridis(discrete = TRUE)+
@@ -296,8 +296,8 @@ cor.test(formula=~mi+Speed, data=out)
 ```{r, fig.width=4.5, fig.height=4}
 p2 <- ggplot(data=out, 
        aes(x=over20, y=mi, ymin=mi-mi.sd, ymax=mi+mi.sd, colour=Habitat))+
+  geom_errorbar(colour=gray(0, 0.2))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
-  geom_errorbar()+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Modeled Duration of Erosion (hr)", y="Maturity Index")+
   scale_fill_viridis(discrete = TRUE)+
@@ -310,8 +310,8 @@ cor.test(formula=~mi+over20, data=out)
 ```{r, fig.width=4.5, fig.height=4}
 p3 <- ggplot(data=out, 
        aes(x=transmissometer, y=mi, ymin=mi-mi.sd, ymax=mi+mi.sd, colour=Habitat))+
+  geom_errorbar(colour=gray(0, 0.2))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
-  geom_errorbar()+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Light Transmission (%)", y="")+
   scale_fill_viridis(discrete = TRUE)+
@@ -325,8 +325,8 @@ cor.test(formula=~mi+transmissometer, data=out)
 ```{r, fig.width=4.5, fig.height=4}
 p4 <- ggplot(data=out, 
        aes(x=TOC, y=mi, ymin=mi-mi.sd, ymax=mi+mi.sd, colour=Habitat))+
+  geom_errorbar(colour=gray(0, 0.2))+
   geom_point(aes(fill=Habitat), pch=21, colour=gray(0, 0.2), size=5)+
-  geom_errorbar()+
   stat_smooth(method="lm", fill="gray60", colour="gray50")+
   labs(x="Total Organic Carbon (%)", y="")+
   scale_fill_viridis(discrete = TRUE)+

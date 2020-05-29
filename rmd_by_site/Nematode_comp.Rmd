@@ -23,6 +23,7 @@ library(betapart)
 library(doBy)
 library(knitr)
 library(cowplot)
+library(nlme)
 ```
 
 # ggplot theme setting
@@ -243,7 +244,6 @@ ggplot(data=subset(out, Trait!=3), aes(x=Zone, y=Contrib, fill=Trait))+
   theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30))
 ```
 
-
 ## Tail shape
 ```{r, fig.width=10, fig.height=4}
 tr <- aggregate(t(b), by=list(s$Tail), FUN=sum)
@@ -344,13 +344,27 @@ names(out)[1:3] <- c("Station", "Habitat", "Zone")
 out[, 4:8] <- decostand(out[, 4:8], "total")
 out <- melt(out, id.vars=c("Station", "Habitat", "Zone"), variable.name = "Trait", value.name = "Contrib")
 
-p1 <- ggplot(data=subset(out, Trait!=3), aes(x=Zone, y=Contrib, fill=Trait))+
+(p1 <- ggplot(data=subset(out, Trait!=3), aes(x=Zone, y=Contrib, fill=Trait))+
   geom_bar(stat="identity", colour=gray(0, 0.2))+
   facet_wrap(~Habitat)+
   labs(y="Relative Contribution", fill="Buccal\nMorph")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
-  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_blank(), axis.title.x=element_blank(), legend.box.spacing=unit(.5, "cm"))
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_blank(), axis.title.x=element_blank(), legend.box.spacing=unit(.5, "cm")))
+
+# Non-selective deposit feeders (1B) between canyon and non-canyon
+summary(gls(Contrib~Habitat, 
+            data=subset(out, Trait=="1B")))
+# Epigrowth feeders (2A) between canyon and non-canyon
+summary(gls(Contrib~Habitat, data=subset(out, Trait=="2A")))
+# Deposit feeders (1A, 1B) as function of depth
+DF <- cbind(summaryBy(Contrib~Station+Habitat+Zone, data=subset(out, Trait=="1A"|Trait=="1B"), FUN=sum, keep.names = TRUE), 
+             Depth =summaryBy(Depth~Station+Habitat, data=e, keep.names = TRUE)$Depth)
+summary(gls(Contrib~Depth, data=DF))
+# Omnivores/predators (2B) as function of depth
+OP <- cbind(summaryBy(Contrib~Station+Habitat+Zone, data=subset(out, Trait=="2B"), FUN=sum, keep.names = TRUE), 
+             Depth =summaryBy(Depth~Station+Habitat, data=e, keep.names = TRUE)$Depth)
+summary(gls(Contrib~Depth, data=OP))
 
 # Tail shape
 out <- aggregate(tai, list(e$Station, e$Habitat, e$Zone), FUN=sum)
@@ -358,13 +372,18 @@ names(out)[1:3] <- c("Station", "Habitat", "Zone")
 out[, 4:7] <- decostand(out[, 4:7], "total")
 out <- melt(out, id.vars=c("Station", "Habitat", "Zone"), variable.name = "Trait", value.name = "Contrib")
 
-p2 <- ggplot(data=subset(out, Trait!=3), aes(x=Zone, y=Contrib, fill=Trait))+
+(p2 <- ggplot(data=subset(out, Trait!=3), aes(x=Zone, y=Contrib, fill=Trait))+
   geom_bar(stat="identity", colour=gray(0, 0.2))+
   facet_wrap(~Habitat)+
   labs(y="Relative Contribution", fill="Tail\nShape")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
-  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_blank(), axis.title.x=element_blank(), strip.background=element_blank(), strip.text=element_blank(), legend.box.spacing=unit(.5, "cm"))
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_blank(), axis.title.x=element_blank(), strip.background=element_blank(), strip.text=element_blank(), legend.box.spacing=unit(.5, "cm")))
+
+# Conical (co) and elongated/filiform tails (e/f) between canyon and non-canyon
+summary(gls(Contrib~Habitat, data=summaryBy(Contrib~Station+Habitat+Zone, data=subset(out, Trait=="co"|Trait=="e/f"), FUN=sum, keep.names = TRUE)))
+# clavate tail (cla) between canyon and non-canyon
+summary(gls(Contrib~Habitat, data=subset(out, Trait=="cla")))
 
 # Life history
 out <- aggregate(lif, list(e$Station, e$Habitat, e$Zone), FUN=sum)
@@ -372,13 +391,36 @@ names(out)[1:3] <- c("Station", "Habitat", "Zone")
 out[, 4:7] <- decostand(out[, 4:7], "total")
 out <- melt(out, id.vars=c("Station", "Habitat", "Zone"), variable.name = "Trait", value.name = "Contrib")
 
-p3 <- ggplot(data=out, aes(x=Zone, y=Contrib, fill=Trait))+
+(p3 <- ggplot(data=out, aes(x=Zone, y=Contrib, fill=Trait))+
   geom_bar(stat="identity", colour=gray(0, 0.2))+
   facet_wrap(~Habitat)+
   labs(x="Depth (m)", y="Relative Contribution", fill="Life\nHistory")+
   scale_fill_viridis(discrete = TRUE)+
   scale_color_viridis(discrete = TRUE)+
-  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30), strip.background=element_blank(), strip.text=element_blank(), legend.box.spacing=unit(.5, "cm"))
+  theme_bw() %+replace% large %+replace% theme(axis.text.x=element_text(angle=30), strip.background=element_blank(), strip.text=element_blank(), legend.box.spacing=unit(.5, "cm")))
+
+# r-selection strategy (c-p value = 2) between canyon and non-canyon
+summary(gls(Contrib~Habitat, 
+            data=subset(out, Trait==2)))
+# Persisters (c-p value = 4) between canyon and non-canyon
+summary(gls(Contrib~Habitat, 
+            data=subset(out, Trait==4)))
+# r-selection strategists as function of depth in canyon
+RS <- cbind(subset(out, Trait==2 &Habitat =="Canyon"), 
+             Depth =summaryBy(Depth~Station, data=subset(e, Habitat =="Canyon"), keep.names = TRUE)$Depth)
+summary(gls(Contrib~Depth, data=RS))
+# r-selection strategists as function of depth on slope
+RS <- cbind(subset(out, Trait==2 &Habitat =="Slope"), 
+             Depth =summaryBy(Depth~Station, data=subset(e, Habitat =="Slope"), keep.names = TRUE)$Depth)
+summary(gls(Contrib~Depth, data=RS))
+# Persisters as function of depth in canyon
+P <- cbind(subset(out, Trait==4 &Habitat =="Canyon"), 
+             Depth =summaryBy(Depth~Station, data=subset(e, Habitat =="Canyon"), keep.names = TRUE)$Depth)
+summary(gls(Contrib~Depth, data=P))
+# Persisters as function of depth on slope
+P <- cbind(subset(out, Trait==4 &Habitat =="Slope"), 
+             Depth =summaryBy(Depth~Station, data=subset(e, Habitat =="Slope"), keep.names = TRUE)$Depth)
+summary(gls(Contrib~Depth, data=P))
 ```
 
 ```{r, fig.width=10, fig.height=10}
