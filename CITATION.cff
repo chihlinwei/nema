@@ -1,0 +1,9 @@
+cff-version: 1.1.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Wei
+    given-names: Chih-Lin
+    orcid: https://orcid.org/0000-0001-9430-0060
+title: chihlinwei/nema: Species and Functional Diversity of Deep-Sea Nematodes in a High Energy Submarine Canyon
+version: v1.0.0
+date-released: 2022-03-15
